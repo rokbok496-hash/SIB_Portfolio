@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIB Portfolio OS · Social Impact Bond Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════════ */
+:root,[data-theme="dark"]{
+  --bg:#111827;--bg2:#0F1A2B;--bg3:#0B1422;
+  --surface:#1C2A3E;--surface2:#243448;--surface3:#2C3F58;
+  --border:#2A3E58;--border2:#3A5070;
+  --text:#E2EAF4;--text2:#8BADC8;--text3:#4D7BA8;
+  --teal:#10B981;--teal-d:#059669;--teal-lt:rgba(16,185,129,.15);
+  --gold:#F59E0B;--gold-d:#D97706;--gold-lt:rgba(245,158,11,.15);
+  --violet:#8B5CF6;--violet-d:#7C3AED;--violet-lt:rgba(139,92,246,.15);
+  --blue:#3B82F6;--blue-lt:rgba(59,130,246,.15);
+  --red:#EF4444;--red-d:#DC2626;--red-lt:rgba(239,68,68,.15);
+  --green:#22C55E;--green-lt:rgba(34,197,94,.15);
+  --orange:#F97316;--orange-lt:rgba(249,115,22,.15);
+  --shadow:0 4px 24px rgba(0,0,0,.5);--shadow-sm:0 1px 6px rgba(0,0,0,.35);
+  --r:8px;--rs:5px;
+}
+[data-theme="light"]{
+  /* Backgrounds — navy-tinted cream/sage instead of plain white */
+  --bg:#EBF0F5;--bg2:#D6E4EE;--bg3:#C2D5E2;
+  --surface:#F4F8FA;--surface2:#E4EEF5;--surface3:#D0E3EE;
+  --border:#A8C4D8;--border2:#7AAEC8;
+
+  /* Text — deep navy for strong contrast */
+  --text:#0B1E30;--text2:#1E4060;--text3:#4A7090;
+
+  /* Accent overrides — richer in light mode */
+  --teal:#0B8C7A;--teal-d:#096B5E;--teal-mid:#10A892;
+  --green:#1A9E52;--green-lt:rgba(26,158,82,.15);
+  --teal-lt:rgba(11,140,122,.14);
+  --gold-lt:rgba(245,158,11,.14);
+  --violet-lt:rgba(139,92,246,.14);
+  --blue-lt:rgba(11,70,120,.12);
+  --red-lt:rgba(192,57,43,.12);
+  --orange-lt:rgba(249,115,22,.12);
+
+  --shadow:0 4px 20px rgba(11,30,48,.14);--shadow-sm:0 1px 4px rgba(11,30,48,.1);
+}
+
+/* Light mode sidebar — rich navy */
+[data-theme="light"] .sidebar{
+  background:linear-gradient(180deg,#0D2B45 0%,#0B2238 100%);
+  border-right:1px solid #0A1E30;
+}
+[data-theme="light"] .sb-section-label{color:rgba(255,255,255,.35)}
+[data-theme="light"] .sb-item{color:rgba(255,255,255,.65)}
+[data-theme="light"] .sb-item:hover{background:rgba(255,255,255,.1);color:#fff}
+[data-theme="light"] .sb-item.active{background:rgba(16,185,129,.2);color:#5EECC8}
+[data-theme="light"] .sb-divider{background:rgba(255,255,255,.1)}
+[data-theme="light"] .sb-stat-row .sv{color:#fff}
+[data-theme="light"] .sb-stat-row .sl{color:rgba(255,255,255,.45)}
+[data-theme="light"] .sb-title{color:#fff}
+[data-theme="light"] .sb-sub{color:rgba(255,255,255,.5)}
+[data-theme="light"] .prog-mini{background:rgba(255,255,255,.12)}
+
+/* Light mode topbar — navy accent strip */
+[data-theme="light"] .topbar{
+  background:#0D2B45;
+  border-bottom:1px solid #0A1E30;
+}
+[data-theme="light"] .topbar-breadcrumb,
+[data-theme="light"] #clock,
+[data-theme="light"] .topbar-title{color:#FFFFFF}
+[data-theme="light"] .topbar-breadcrumb span{color:#FFFFFF}
+[data-theme="light"] .topbar-breadcrumb .topbar-sub{color:rgba(255,255,255,.75)}
+[data-theme="light"] #topbar-title{color:#FFFFFF !important}
+[data-theme="light"] #topbar-sub{color:rgba(255,255,255,.75) !important}
+[data-theme="light"] .topbar-breadcrumb *{color:rgba(255,255,255,.75)}
+[data-theme="light"] .theme-btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.85)}
+[data-theme="light"] .theme-btn:hover{border-color:var(--teal);color:#5EECC8}
+[data-theme="light"] .contract-tag{background:rgba(245,158,11,.25);color:#FFD080}
+
+/* Light mode view tabs — light navy tint */
+[data-theme="light"] .view-tabs{
+  background:#F0F6FA;
+  border-bottom:2px solid #A8C4D8;
+}
+[data-theme="light"] .vt-btn{color:#2A5070}
+[data-theme="light"] .vt-btn:hover{color:#0B2238;background:#D6E4EE}
+[data-theme="light"] .vt-btn.active{color:var(--teal);background:var(--teal-lt)}
+
+/* Light mode calendar cells */
+[data-theme="light"] .cal-dow-row{background:#D6E4EE}
+[data-theme="light"] .cal-dow{color:#1E4060}
+[data-theme="light"] .cal-cell{border-color:#A8C4D8}
+[data-theme="light"] .cal-cell:hover{background:#D6E4EE}
+[data-theme="light"] .cal-cell.today{background:rgba(11,140,122,.12)}
+[data-theme="light"] .cal-header{background:#F0F6FA;border-bottom:1px solid #A8C4D8}
+
+/* Light mode cards — slight navy tint */
+[data-theme="light"] .card{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] th{background:#D6E4EE;color:#1E4060}
+[data-theme="light"] .metric-tile{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] .task-list-panel{background:#E4EEF5}
+[data-theme="light"] .task-list-item:hover{background:#D0E3EE}
+[data-theme="light"] .task-list-item.selected{background:rgba(11,140,122,.14)}
+[data-theme="light"] .cal-detail-panel{background:#F4F8FA;border-left-color:#A8C4D8}
+[data-theme="light"] .dp-row{border-bottom-color:#A8C4D8}
+[data-theme="light"] .dp-val input,[data-theme="light"] .dp-val select,[data-theme="light"] .dp-val textarea{background:#E4EEF5;border-color:#A8C4D8;color:#0B1E30}
+[data-theme="light"] .dp-notion-link{background:#E4EEF5;border-color:#A8C4D8;color:#4A7090}
+
+/* Light mode stat cards */
+[data-theme="light"] .stat-card{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] .next-close-box{background:linear-gradient(135deg,rgba(245,158,11,.12),#F4F8FA)}
+
+/* Light mode KRA bars background */
+[data-theme="light"] .kra-bar{background:#D0E3EE}
+[data-theme="light"] .prog-mini{background:#C2D5E2}
+
+/* Light mode form fields */
+[data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{background:#E4EEF5;border-color:#A8C4D8;color:#0B1E30}
+[data-theme="light"] .rich-text{background:#E4EEF5;border-color:#A8C4D8;color:#0B1E30}
+[data-theme="light"] .ai-output{background:#E4EEF5;border-color:#A8C4D8}
+[data-theme="light"] .api-key-wrap{background:#E4EEF5;border-color:#7AAEC8}
+[data-theme="light"] .api-key-wrap input{background:#F4F8FA;border-color:#A8C4D8;color:#0B1E30}
+[data-theme="light"] .deliv-item{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] .risk-item{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] .sh-card{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] .gantt-track{background:#D0E3EE;border-color:#A8C4D8}
+[data-theme="light"] .chip{background:#E4EEF5;border-color:#A8C4D8;color:#1E4060}
+[data-theme="light"] .chip:hover{background:var(--teal-lt);border-color:var(--teal);color:var(--teal)}
+[data-theme="light"] .ts-ei{background:#F4F8FA;border-color:#A8C4D8;color:#0B1E30}
+[data-theme="light"] .modal{background:#F4F8FA;border-color:#A8C4D8}
+[data-theme="light"] .add-deliv-row{border-color:#7AAEC8}
+[data-theme="light"] .add-deliv-row input{background:#E4EEF5;color:#0B1E30}
+[data-theme="light"] .add-deliv-row select{background:#E4EEF5;color:#0B1E30}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;height:100%;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ══════════════════════════════════════════════════════
+   SHELL — 3-column layout like Notion
+══════════════════════════════════════════════════════ */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar{
+  width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:width .2s
+}
+.sidebar.collapsed{width:0}
+.sb-top{padding:14px 12px 8px;border-bottom:1px solid var(--border)}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:8px 8px 12px}
+.sb-logo{width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,var(--teal),var(--teal-d));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo svg{stroke:#fff}
+.sb-title{font-size:14px;font-weight:700;color:var(--text)}
+.sb-sub{font-size:10px;color:var(--text3)}
+.sb-section{padding:8px 12px 0}
+.sb-section-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:6px 8px 4px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--rs);cursor:pointer;color:var(--text2);font-size:12px;font-weight:500;transition:all .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-item:hover{background:var(--surface2);color:var(--text)}
+.sb-item.active{background:var(--teal-lt);color:var(--teal)}
+.sb-item svg{flex-shrink:0;opacity:.7}
+.sb-item.active svg{opacity:1}
+.sb-divider{height:1px;background:var(--border);margin:8px 12px}
+.sb-stats{padding:12px;border-top:1px solid var(--border);margin-top:auto}
+.sb-stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px}
+.sb-stat-row .sv{font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text)}
+.sb-stat-row .sl{color:var(--text3)}
+.prog-mini{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px}
+.prog-mini-fill{height:5px;background:linear-gradient(90deg,var(--teal),var(--teal-d));border-radius:3px;transition:width .5s}
+
+/* ── MAIN AREA ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:48px;flex-shrink:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  z-index:50
+}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-title{font-size:14px;font-weight:600;color:var(--text)}
+.topbar-breadcrumb{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+#clock{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.theme-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);transition:all .15s;white-space:nowrap}
+.theme-btn:hover{border-color:var(--teal);color:var(--teal)}
+.contract-tag{background:var(--gold-lt);color:var(--gold);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.04em;white-space:nowrap}
+
+/* ── VIEW TABS ── */
+.view-tabs{height:40px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:2px;overflow-x:auto}
+.vt-btn{padding:6px 14px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text3);border-radius:var(--rs);font-family:'Inter',sans-serif;transition:all .12s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.vt-btn:hover{color:var(--text);background:var(--surface2)}
+.vt-btn.active{color:var(--teal);background:var(--teal-lt);font-weight:600}
+.vt-btn span.vtcount{background:var(--border2);color:var(--text2);font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px}
+.vt-sep{width:1px;height:16px;background:var(--border);margin:0 4px;flex-shrink:0}
+
+/* ── CONTENT AREA ── */
+.content-area{flex:1;overflow:hidden;display:flex;position:relative}
+.view{display:none;width:100%;height:100%;overflow:auto;padding:16px}
+.view.active{display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════════════════════
+   CALENDAR VIEW (main view)
+══════════════════════════════════════════════════════ */
+.cal-layout{display:flex;flex:1;gap:0;min-height:0;overflow:hidden}
+.cal-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.cal-detail-panel{width:320px;flex-shrink:0;border-left:1px solid var(--border);background:var(--surface);overflow-y:auto;display:none}
+.cal-detail-panel.open{display:flex;flex-direction:column}
+
+/* Calendar header */
+.cal-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.cal-month-nav{display:flex;align-items:center;gap:6px}
+.cal-month-label{font-size:15px;font-weight:700;color:var(--text);min-width:160px}
+.cal-nav-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:13px;transition:all .12s}
+.cal-nav-btn:hover{border-color:var(--teal);color:var(--teal)}
+.cal-today-btn{padding:5px 12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);cursor:pointer;font-size:11px;font-weight:600;color:var(--text2);font-family:'Inter',sans-serif;transition:all .12s}
+.cal-today-btn:hover{border-color:var(--teal);color:var(--teal)}
+.cal-filter-btn{padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:transparent;cursor:pointer;font-size:10px;font-weight:600;color:var(--text3);font-family:'Inter',sans-serif;transition:all .12s;white-space:nowrap}
+.cal-filter-btn:hover{border-color:var(--text2);color:var(--text2)}
+.cal-filter-btn.active{border-color:var(--teal);color:var(--teal);background:var(--teal-lt)}
+.cal-add-btn{padding:5px 12px;border:1px solid var(--teal);border-radius:var(--rs);background:var(--teal);cursor:pointer;font-size:11px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;transition:all .12s;display:flex;align-items:center;gap:4px}
+.cal-add-btn:hover{background:var(--teal-d)}
+
+/* Calendar grid */
+.cal-grid-wrap{flex:1;overflow:auto;padding:0}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.cal-dow{text-align:center;padding:8px 4px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(100px,auto)}
+.cal-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px 5px;min-height:100px;cursor:pointer;transition:background .12s;position:relative;overflow:hidden}
+.cal-cell:nth-child(7n){border-right:none}
+.cal-cell:hover{background:var(--surface2)}
+.cal-cell.today{background:var(--teal-lt)}
+.cal-cell.today .cal-cell-date{background:var(--teal);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-cell.other-month{opacity:.4}
+.cal-cell.selected{background:var(--blue-lt);outline:2px solid var(--blue);outline-offset:-1px}
+.cal-cell-date{font-size:11px;font-weight:600;color:var(--text2);width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.cal-cell-today-label{position:absolute;top:6px;right:5px;font-size:8px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.06em}
+
+/* Task cards on calendar */
+.cal-task-card{
+  border-radius:4px;padding:3px 6px;margin-bottom:2px;cursor:pointer;
+  font-size:10px;font-weight:500;line-height:1.4;
+  border-left:3px solid transparent;
+  transition:opacity .12s;overflow:hidden;
+  display:flex;align-items:flex-start;gap:4px;
+}
+.cal-task-card:hover{opacity:.85}
+.cal-task-card.milestone{border-radius:4px}
+.cal-task-card .ctc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.cal-task-card .ctc-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.cal-more{font-size:9px;color:var(--text3);padding:2px 4px;cursor:pointer}
+.cal-more:hover{color:var(--teal)}
+
+/* Task card colours by KRA */
+.kra-Research{background:rgba(59,130,246,.18);border-left-color:var(--blue);color:#7FBFFF}
+.kra-PM{background:rgba(139,92,246,.18);border-left-color:var(--violet);color:#BFA0FF}
+.kra-Admin{background:rgba(245,158,11,.18);border-left-color:var(--gold);color:#FFD080}
+.kra-Dissemination{background:rgba(16,185,129,.18);border-left-color:var(--teal);color:#80E8C8}
+.kra-Milestone{background:rgba(249,115,22,.18);border-left-color:var(--orange);color:#FFB380}
+
+/* Status pill */
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.sp-inprog{background:rgba(245,158,11,.18);color:var(--gold)}
+.sp-notstart{background:var(--red-lt);color:var(--red)}
+.sp-done{background:var(--green-lt);color:var(--green)}
+.sp-blocked{background:rgba(239,68,68,.2);color:#FF8080}
+.sp-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* ── DETAIL PANEL ── */
+.dp-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px}
+.dp-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;margin-left:auto;padding:2px 5px;border-radius:4px}
+.dp-close:hover{background:var(--surface2);color:var(--text)}
+.dp-title-wrap{flex:1}
+.dp-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.dp-meta{font-size:11px;color:var(--text3)}
+.dp-body{padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.dp-row{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.dp-row:last-child{border-bottom:none}
+.dp-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;min-width:90px;padding-top:2px}
+.dp-val{font-size:12px;color:var(--text);flex:1}
+.dp-val select,.dp-val input,.dp-val textarea{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Inter',sans-serif}
+.dp-val select:focus,.dp-val input:focus,.dp-val textarea:focus{outline:none;border-color:var(--teal)}
+.dp-val select option{background:var(--surface)}
+.dp-save-btn{margin:12px 16px;padding:8px;background:var(--teal);border:none;border-radius:var(--rs);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.dp-save-btn:hover{background:var(--teal-d)}
+.dp-delete-btn{margin:0 16px 16px;padding:8px;background:transparent;border:1px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.dp-delete-btn:hover{background:var(--red-lt)}
+.dp-notion-link{margin:0 16px 16px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px}
+
+/* ══════════════════════════════════════════════════════
+   LIST VIEW (sidebar task list like Notion)
+══════════════════════════════════════════════════════ */
+.list-layout{display:flex;flex:1;gap:0;overflow:hidden}
+.task-list-panel{width:380px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2)}
+.task-list-item{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.task-list-item:hover{background:var(--surface)}
+.task-list-item.selected{background:var(--teal-lt)}
+.tli-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.tli-date{font-size:11px;color:var(--text3);margin-bottom:6px}
+.tli-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tli-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px}
+
+/* ══════════════════════════════════════════════════════
+   CARDS / GENERAL
+══════════════════════════════════════════════════════ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.card-head{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.card-head::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--teal);flex-shrink:0}
+.card-head.gold::before{background:var(--gold)}
+.card-head.violet::before{background:var(--violet)}
+.card-head.red::before{background:var(--red)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* Metric tiles */
+.metric-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.metric-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.mt-teal::before{background:linear-gradient(90deg,var(--teal),#34D399)}
+.mt-gold::before{background:linear-gradient(90deg,var(--gold),#FCD34D)}
+.mt-violet::before{background:linear-gradient(90deg,var(--violet),#A78BFA)}
+.mt-blue::before{background:linear-gradient(90deg,var(--blue),#60A5FA)}
+.mt-red::before{background:linear-gradient(90deg,var(--red),#F87171)}
+.metric-tile .ml{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.metric-tile .mv{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text);margin:5px 0 2px;letter-spacing:-1px}
+.metric-tile .ms{font-size:10px;color:var(--text2)}
+
+/* Forms */
+.field{margin-bottom:11px}
+.field label{display:block;font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.field input,.field select,.field textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;transition:border-color .12s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal);background:var(--surface)}
+.field select option{background:var(--surface)}
+.field textarea{resize:vertical;min-height:65px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+
+/* Buttons */
+.btn{padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.btn-teal{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn-teal:hover{background:var(--teal-d);border-color:var(--teal-d);color:#fff}
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn-gold:hover{background:var(--gold-d);color:#fff}
+.btn-violet{background:var(--violet);border-color:var(--violet);color:#fff}
+.btn-violet:hover{background:var(--violet-d);color:#fff}
+.btn-red{background:var(--red);border-color:var(--red);color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text3);padding:5px 7px}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.btn-danger{color:var(--red);border-color:var(--border)}
+.btn-danger:hover{background:var(--red-lt);border-color:var(--red)}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-xs{padding:2px 7px;font-size:9px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+
+/* Tables */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;background:var(--surface2);position:sticky;top:0}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--teal-lt)}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}
+.b-teal{background:var(--teal-lt);color:var(--teal)}
+.b-gold{background:var(--gold-lt);color:var(--gold)}
+.b-violet{background:var(--violet-lt);color:var(--violet)}
+.b-blue{background:var(--blue-lt);color:var(--blue)}
+.b-red{background:var(--red-lt);color:var(--red)}
+.b-green{background:var(--green-lt);color:var(--green)}
+.b-orange{background:var(--orange-lt);color:var(--orange)}
+.b-gray{background:var(--surface2);color:var(--text3)}
+
+/* KRA bars */
+.kra-item{margin-bottom:18px}
+.kra-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:4px}
+.kra-name{font-size:12px;font-weight:600;color:var(--text)}
+.kra-info{font-size:10px;color:var(--text2);font-family:'JetBrains Mono',monospace}
+.kra-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.kra-fill{height:8px;border-radius:4px;transition:width .5s ease}
+.kra-sub{font-size:9px;color:var(--text3);margin-top:3px}
+
+/* RAG */
+.rag{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:var(--rs);font-size:11px;font-weight:500;margin-bottom:5px}
+.rag-g{background:var(--green-lt);border:1px solid rgba(34,197,94,.3);color:var(--green)}
+.rag-a{background:var(--gold-lt);border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+.rag-r{background:var(--red-lt);border:1px solid rgba(239,68,68,.3);color:var(--red)}
+
+/* Deliverables */
+.deliv-item{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--rs);border:1px solid var(--border);margin-bottom:5px;background:var(--surface);transition:box-shadow .12s}
+.deliv-item:hover{box-shadow:var(--shadow-sm)}
+.deliv-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--teal);flex-shrink:0}
+.deliv-label{flex:1;font-size:12px;cursor:pointer}
+.deliv-label.done{text-decoration:line-through;color:var(--text3)}
+
+/* Gantt */
+.gantt-wrap{overflow-x:auto;padding-bottom:8px}
+.gantt-row{display:flex;align-items:center;margin-bottom:5px;min-height:28px}
+.gantt-row-label{width:200px;flex-shrink:0;font-size:11px;padding-right:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gantt-row-label .grl-sub{font-size:9px;color:var(--text3)}
+.gantt-track{flex:1;height:20px;background:var(--surface2);border-radius:4px;position:relative;border:1px solid var(--border);min-width:400px}
+.gantt-bar{position:absolute;height:100%;border-radius:4px;display:flex;align-items:center;padding:0 5px;font-size:9px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden}
+.gantt-today-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:rgba(239,68,68,.7);z-index:5;pointer-events:none}
+.gantt-today-line::after{content:'▼';position:absolute;top:-10px;left:-4px;font-size:8px;color:var(--red)}
+.gantt-header-row{display:flex;align-items:center;margin-bottom:8px}
+.gantt-header-label{width:200px;flex-shrink:0;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase}
+.gantt-months{flex:1;display:flex;min-width:400px}
+.gantt-month-cell{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding-left:4px;padding-bottom:4px}
+
+
+/* Risk */
+.risk-item{padding:11px 14px;border-radius:var(--rs);border:1px solid var(--border);margin-bottom:7px;background:var(--surface);border-left:3px solid var(--border2)}
+.risk-item.high{border-left-color:var(--red)}
+.risk-item.medium{border-left-color:var(--gold)}
+.risk-item.low{border-left-color:var(--green)}
+
+/* Stakeholders */
+.sh-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px}
+.sh-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* Business case */
+.bc-section{border-left:3px solid var(--teal);padding-left:14px;margin-bottom:22px}
+.bc-section.gold{border-left-color:var(--gold)}
+.bc-section.violet{border-left-color:var(--violet)}
+.bc-section.red{border-left-color:var(--red)}
+.bc-section h3{font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.bc-toc-link{display:block;padding:5px 8px;font-size:11px;color:var(--text2);text-decoration:none;border-radius:var(--rs);cursor:pointer;transition:all .12s;border-left:2px solid transparent}
+.bc-toc-link:hover{background:var(--teal-lt);color:var(--teal);border-left-color:var(--teal)}
+.bc-toc-sub{padding-left:18px;font-size:10px;color:var(--text3)}
+.bc-toc-sub:hover{color:var(--teal)}
+.bc-status-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);font-size:10px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--text2);transition:all .12s}
+.bc-status-btn.active{background:var(--teal);border-color:var(--teal);color:#fff}
+.rich-text{width:100%;min-height:100px;padding:10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;line-height:1.7;resize:vertical}
+.rich-text:focus{outline:none;border-color:var(--teal);background:var(--surface)}
+
+/* Payroll */
+.next-close-box{background:linear-gradient(135deg,var(--gold-lt),var(--surface));border:1px solid var(--gold);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.nc-icon{width:38px;height:38px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* AI */
+.chip-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{padding:5px 11px;border-radius:20px;font-size:10px;font-weight:500;border:1px solid var(--border);cursor:pointer;background:var(--surface);color:var(--text2);transition:all .12s;font-family:'Inter',sans-serif}
+.chip:hover{background:var(--teal-lt);border-color:var(--teal);color:var(--teal)}
+.ai-output{border:1px solid var(--border);border-radius:var(--rs);padding:14px;background:var(--bg2);font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);margin-top:10px;min-height:80px;display:none}
+.ai-loading{font-size:12px;color:var(--text2);padding:12px 0;display:none;align-items:center;gap:8px}
+.spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Timesheet inline edit */
+.ts-edit-row{display:none;background:var(--bg2)!important}
+.ts-edit-row.open{display:table-row}
+.ts-edit-row td{padding:8px 6px;border-bottom:2px solid var(--teal)!important}
+.ts-ei{width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:var(--rs);font-size:11px;font-family:'Inter',sans-serif;background:var(--surface);color:var(--text)}
+.ts-ei:focus{outline:none;border-color:var(--teal)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:500;padding:9px 16px;border-radius:var(--rs);box-shadow:var(--shadow);display:flex;align-items:center;gap:7px;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:var(--teal);color:var(--teal)}
+.toast.err{border-color:var(--red);color:var(--red)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:36px;color:var(--text3);font-size:12px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);position:relative}
+.modal h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:3px 6px;border-radius:4px}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+
+/* Autocomplete */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--teal);border-top:none;border-radius:0 0 var(--rs) var(--rs);max-height:130px;overflow-y:auto;z-index:200;box-shadow:var(--shadow);display:none}
+.ac-drop.open{display:block}
+.ac-item{padding:5px 10px;font-size:11px;cursor:pointer;color:var(--text);border-bottom:1px solid var(--border)}
+.ac-item:hover{background:var(--teal-lt);color:var(--teal)}
+
+/* Stats */
+.stat-card{background:var(--surface);border-radius:var(--r);padding:13px 15px;border:1px solid var(--border);border-left:3px solid transparent}
+.sc-t{border-left-color:var(--teal)}.sc-g{border-left-color:var(--gold)}.sc-v{border-left-color:var(--violet)}.sc-b{border-left-color:var(--blue)}.sc-r{border-left-color:var(--red)}
+.stat-card .sl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.stat-card .sv{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text);margin:3px 0 2px;letter-spacing:-.5px}
+.stat-card .ss{font-size:10px;color:var(--text2)}
+
+/* API key */
+.api-key-wrap{background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.api-key-wrap label{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap}
+.api-key-wrap input{flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--rs);font-size:12px;font-family:'JetBrains Mono',monospace;background:var(--surface);color:var(--text)}
+.api-key-wrap input:focus{outline:none;border-color:var(--teal)}
+
+/* Totals */
+.totals-bar{display:flex;gap:18px;font-size:11px;flex-wrap:wrap;padding:11px 0 0;border-top:1px solid var(--border);margin-top:8px}
+.totals-bar strong{color:var(--teal);font-family:'JetBrains Mono',monospace}
+
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════════════════════════════
+     LEFT SIDEBAR
+══════════════════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <div class="sb-brand">
+      <div class="sb-logo"><svg width="18" height="18" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+      <div>
+        <div class="sb-title">SIB Portfolio OS</div>
+        <div class="sb-sub">Social Impact Bond Portfolio · Health outcomes · South Africa</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Views</div>
+    <div class="sb-item active" onclick="showView('calendar')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar (Plan Date)
+    </div>
+    <div class="sb-item" onclick="showView('list')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      All Tasks
+    </div>
+    <div class="sb-item" onclick="showView('timesheet')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      SIB Time Log
+    </div>
+    <div class="sb-item" onclick="showView('payroll')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Payroll
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-section">
+    <div class="sb-section-label">Project Tools</div>
+    <div class="sb-item" onclick="showView('kra')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      KRA &amp; Deliverables
+    </div>
+    <div class="sb-item" onclick="showView('gantt')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="9" width="8" height="4" rx="1"/><rect x="9" y="3" width="10" height="4" rx="1"/><rect x="5" y="15" width="12" height="4" rx="1"/></svg>
+      Gantt Chart
+    </div>
+
+    <div class="sb-item" onclick="showView('businesscase')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Business Case
+    </div>
+    <div class="sb-item" onclick="showView('risk')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Risk Register
+    </div>
+    <div class="sb-item" onclick="showView('stakeholders')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Stakeholders
+    </div>
+    <div class="sb-item" onclick="showView('stats')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Stats &amp; AI Agent
+    </div>
+  </div>
+
+  <div class="sb-stats">
+    <div class="sb-stat-row"><span class="sl">Hours logged</span><span class="sv" id="sb-logged">0.0</span></div>
+    <div class="sb-stat-row"><span class="sl">Remaining</span><span class="sv" id="sb-remain">520</span></div>
+    <div class="sb-stat-row"><span class="sl">Progress</span><span class="sv" id="sb-pct">0%</span></div>
+    <div class="prog-mini" style="margin-top:8px"><div class="prog-mini-fill" id="sb-prog"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MAIN AREA
+══════════════════════════════════════════════════ -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="btn-ghost btn" style="padding:4px 8px" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-breadcrumb">
+        <span id="topbar-title" style="font-size:13px;font-weight:600">SIB Portfolio OS</span>
+        <span style="color:var(--border2)">›</span>
+        <span id="topbar-sub" class="topbar-sub">Calendar (Plan Date)</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="clock"></div>
+      <div class="contract-tag">15 Jun 2026 · 520 hrs</div>
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+    </div>
+  </div>
+
+  <!-- VIEW TABS (context-sensitive) -->
+  <div class="view-tabs" id="view-tabs-bar">
+    <button class="vt-btn active" onclick="showView('calendar')">📅 Calendar</button>
+    <button class="vt-btn" onclick="showView('list')">☰ All Tasks</button>
+    <div class="vt-sep"></div>
+    <button class="vt-btn" onclick="openAddTask()">+ New Task</button>
+    <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+      <span style="font-size:10px;color:var(--text3)">Filter:</span>
+      <button class="cal-filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+      <button class="cal-filter-btn" data-filter="Research" onclick="setFilter('Research',this)">Research</button>
+      <button class="cal-filter-btn" data-filter="Project Management" onclick="setFilter('Project Management',this)">PM</button>
+      <button class="cal-filter-btn" data-filter="Research Admin" onclick="setFilter('Research Admin',this)">Admin</button>
+      <button class="cal-filter-btn" data-filter="Dissemination" onclick="setFilter('Dissemination',this)">Dissem.</button>
+      <button class="cal-filter-btn" data-filter="Milestone" onclick="setFilter('Milestone',this)">Milestones</button>
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content-area">
+
+    <!-- ══ CALENDAR VIEW ══ -->
+    <div id="view-calendar" class="view active" style="padding:0;overflow:hidden">
+      <div class="cal-layout" style="height:100%">
+        <div class="cal-main">
+          <!-- Cal header -->
+          <div class="cal-header">
+            <div class="cal-month-nav">
+              <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+              <div class="cal-month-label" id="cal-month-label">June 2026</div>
+              <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+              <button class="cal-today-btn" onclick="goToday()">Today</button>
+            </div>
+            <button class="cal-add-btn" onclick="openAddTask()">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Task
+            </button>
+          </div>
+          <!-- Calendar grid -->
+          <div class="cal-grid-wrap">
+            <div class="cal-dow-row">
+              <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
+              <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+        </div>
+        <!-- Detail Panel (like Notion right panel) -->
+        <div class="cal-detail-panel" id="detail-panel">
+          <div class="dp-header">
+            <div class="dp-title-wrap">
+              <div class="dp-title" id="dp-title">Select a task</div>
+              <div class="dp-meta" id="dp-meta"></div>
+            </div>
+            <button class="dp-close" onclick="closeDetail()">✕</button>
+          </div>
+          <div class="dp-body" id="dp-body"></div>
+          <button class="dp-save-btn" id="dp-save-btn" onclick="saveDetailEdit()">Save Changes</button>
+          <button class="dp-delete-btn" id="dp-delete-btn" onclick="deleteCurrentTask()">Delete Task</button>
+          <div class="dp-notion-link">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            All data saved locally in your browser
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LIST VIEW ══ -->
+    <div id="view-list" class="view" style="padding:0;overflow:hidden">
+      <div class="list-layout" style="height:100%">
+        <div class="task-list-panel" id="task-list-panel"></div>
+        <div style="flex:1;overflow-y:auto;padding:16px">
+          <div class="card">
+            <div class="card-head">All Tasks</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Task</th><th>Project</th><th>Plan Date</th><th>Due</th><th>KRA</th><th>Type</th><th>Status</th><th>Effort</th><th></th></tr></thead>
+                <tbody id="all-tasks-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TIMESHEET ══ -->
+    <div id="view-timesheet" class="view" style="overflow:auto;flex-direction:column">
+      <div class="g4" style="margin-bottom:16px">
+        <div class="metric-tile mt-teal"><div class="ml">Hours Logged</div><div class="mv" id="mt-logged">0.0</div><div class="ms">of 520 contracted</div></div>
+        <div class="metric-tile mt-gold"><div class="ml">Remaining</div><div class="mv" id="mt-remain">520.0</div><div class="ms" id="mt-daily">~65 days</div></div>
+        <div class="metric-tile mt-violet"><div class="ml">Amount Earned</div><div class="mv" id="mt-amt">R 0</div><div class="ms" id="mt-rate-sub">Set rate below</div></div>
+        <div class="metric-tile mt-blue"><div class="ml">Days Elapsed</div><div class="mv" id="mt-days">0</div><div class="ms">since 15 Jun 2026</div></div>
+      </div>
+      <!-- Rate + progress -->
+      <div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">Overall Progress</span>
+        <div style="flex:1;min-width:80px;height:7px;background:var(--border);border-radius:4px;overflow:hidden"><div class="prog-mini-fill" id="ts-pfill" style="width:0%"></div></div>
+        <span style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal);min-width:45px" id="ts-ppct">0%</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+          <label style="font-size:11px;color:var(--text2);font-weight:500;white-space:nowrap">Hourly rate (R)</label>
+          <input type="number" id="rate-global" style="width:110px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px" placeholder="e.g. 350" oninput="updateRate()">
+        </div>
+      </div>
+      <!-- Log form -->
+      <div class="card">
+        <div class="card-head">Log a Session</div>
+        <div class="fg2">
+          <div>
+            <div class="field"><label>Date Worked From</label><input type="date" id="df"></div>
+            <div class="field"><label>Date Worked To</label><input type="date" id="dt"></div>
+            <div class="field"><label>Time From</label><input type="time" id="tf"></div>
+            <div class="field"><label>Time To</label><input type="time" id="tt"></div>
+          </div>
+          <div>
+            <div class="field"><label>KRA Category</label>
+              <select id="log-kra">
+                <option value="Research">Research (50%)</option>
+                <option value="Project Management">Project Management (40%)</option>
+                <option value="Research Admin">Research Admin (5%)</option>
+                <option value="Dissemination">Presentation & Dissemination (5%)</option>
+              </select>
+            </div>
+            <div class="field"><label>Activity</label>
+              <div class="ac-wrap"><input type="text" id="activity" placeholder="e.g. Desktop research — Cataract SIB" autocomplete="off" oninput="acF('activity','ac-act')" onfocus="acF('activity','ac-act')" onblur="setTimeout(()=>acC('ac-act'),200)"><div class="ac-drop" id="ac-act"></div></div>
+            </div>
+            <div class="field"><label>Output / Deliverable</label>
+              <div class="ac-wrap"><input type="text" id="ts-output" placeholder="e.g. Business case draft, Section 1" autocomplete="off" oninput="acF('ts-output','ac-out')" onfocus="acF('ts-output','ac-out')" onblur="setTimeout(()=>acC('ac-out'),200)"><div class="ac-drop" id="ac-out"></div></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px">
+              <button class="btn btn-teal" onclick="addTSEntry()">+ Add Session</button>
+            </div>
+          </div>
+        </div>
+        <div id="ts-preview" style="font-size:12px;color:var(--teal);font-weight:600;padding:9px 12px;background:var(--teal-lt);border-radius:var(--rs);margin-top:10px;font-family:'JetBrains Mono',monospace;border-left:3px solid var(--teal)">Fill in dates and times to preview hours</div>
+      </div>
+      <!-- Timesheet table -->
+      <div class="card" style="flex:1">
+        <div class="toolbar"><div class="card-head" style="margin-bottom:0">All Timesheet Entries</div><div style="display:flex;gap:6px"><button class="btn btn-teal btn-sm" onclick="exportCSV()">⬇ CSV</button><button class="btn btn-danger btn-sm" onclick="clearTS()">Clear All</button></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date From</th><th>Date To</th><th>From</th><th>To</th><th>Hours</th><th>Rate</th><th>Amount</th><th>KRA</th><th>Activity</th><th>Output</th><th style="width:60px"></th></tr></thead>
+            <tbody id="ts-tbody"></tbody>
+          </table>
+        </div>
+        <div id="ts-totals" class="totals-bar" style="display:none">
+          <span>Total hours: <strong id="t-hrs">0</strong></span>
+          <span>Total amount: <strong id="t-amt">R 0</strong></span>
+          <span>Period: <strong id="t-period">—</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ KRA ══ -->
+    <div id="view-kra" class="view" style="overflow:auto;flex-direction:column">
+      <div class="g2" style="margin-bottom:0">
+        <div class="card"><div class="card-head">KRA Allocation vs Targets</div><div id="kra-bars"></div></div>
+        <div>
+          <div class="card"><div class="card-head">RAG Status</div><div id="kra-rag"></div></div>
+          <div class="card"><div class="card-head green">Deliverable Progress</div>
+            <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace" id="deliv-count">0/0</div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:10px">deliverables completed</div>
+            <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden"><div class="prog-mini-fill" id="deliv-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="toolbar"><div class="card-head gold" style="margin-bottom:0">Project Deliverables <span id="delivs-badge" style="font-size:9px;background:var(--gold-lt);color:var(--gold);padding:2px 7px;border-radius:10px;font-weight:700;margin-left:5px">0</span></div>
+          <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="resetDelivs()">↩ Reset</button><button class="btn btn-gold btn-sm" onclick="showAddDeliv()">+ Add</button></div>
+        </div>
+        <div id="deliverables-list"></div>
+        <div id="add-deliv-panel" style="display:none;margin-top:10px">
+          <div style="display:flex;gap:7px;align-items:center;padding:9px 11px;border:1px dashed var(--border2);border-radius:var(--rs);flex-wrap:wrap">
+            <input type="text" id="new-deliv-text" placeholder="New deliverable..." style="flex:1;min-width:150px;padding:6px 9px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px">
+            <select id="new-deliv-kra" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:11px"><option value="Research">Research</option><option value="Project Management">Project Management</option><option value="Research Admin">Research Admin</option><option value="Dissemination">Dissemination</option></select>
+            <button class="btn btn-gold btn-sm" onclick="addDeliv()">Add</button>
+            <button class="btn btn-sm" onclick="hideAddDeliv()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GANTT ══ -->
+    <div id="view-gantt" class="view" style="overflow:auto;flex-direction:column">
+      <div class="card">
+        <div class="toolbar"><div class="card-head" style="margin-bottom:0">Gantt Chart</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:10px;color:var(--text2)">View:</span>
+            <button class="btn btn-sm" onclick="setGView(3)" id="gv3">3 Mo</button>
+            <button class="btn btn-sm btn-teal" onclick="setGView(6)" id="gv6">6 Mo</button>
+            <button class="btn btn-sm" onclick="setGView(12)" id="gv12">12 Mo</button>
+          </div>
+        </div>
+        <div class="gantt-wrap"><div id="gantt-container" style="min-width:700px"></div></div>
+      </div>
+    </div>
+
+
+    <!-- ══ BUSINESS CASE ══ -->
+    <div id="view-businesscase" class="view" style="overflow:hidden;flex-direction:row;padding:0">
+      <!-- ── BC LEFT SIDEBAR: Saved cases + ToC navigation only ── -->
+      <div style="width:240px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);height:100%;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:0">
+
+        <!-- Saved Business Cases list -->
+        <div style="margin-bottom:10px">
+          <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;padding:0 4px">Saved Business Cases</div>
+          <div id="bc-saved-quicklist" style="display:flex;flex-direction:column;gap:2px"></div>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin:8px 0"></div>
+
+        <!-- ToC Navigation -->
+        <div style="flex:1">
+          <!-- SOBC ToC -->
+          <div id="bc-toc-sobc" style="display:flex;flex-direction:column;gap:1px">
+            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 4px">Table of Contents</div>
+            <a class="bc-toc-link" onclick="scrollToBC('bc-intro')">1. Introduction &amp; Background</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-agyw')">↳ Focus Population</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-what')">↳ What is a SOBC?</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-importance')">↳ Importance for SA</a>
+            <a class="bc-toc-link" onclick="scrollToBC('bc-design')">2. Design &amp; Implementation</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-implementer')">↳ The Implementer</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-geo')">↳ Geographical Focus</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-baselines')">↳ Baselines, Targets &amp; Metrics</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-me')">↳ Monitoring &amp; Evaluation</a>
+            <a class="bc-toc-link" onclick="scrollToBC('bc-investor')">3. Social Investor</a>
+            <a class="bc-toc-link" onclick="scrollToBC('bc-approvals')">4. Approvals &amp; Contracting</a>
+            <a class="bc-toc-link" onclick="scrollToBC('bc-governance')">5. Governance Arrangements</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-risks')">↳ Risks</a>
+            <a class="bc-toc-link" onclick="scrollToBC('bc-funding')">6. Funding &amp; Budget</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-counterpart')">↳ Counterpart Funding</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-outcomes-budget')">↳ Outcomes Funding</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-flow')">↳ Flow of Funds</a>
+          </div>
+
+          <!-- General template ToC -->
+          <div id="bc-toc-general" style="display:none;flex-direction:column;gap:1px">
+            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 4px">Table of Contents</div>
+            <a class="bc-toc-link" onclick="scrollToBC('gc-strategic')">1. Strategic Case</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-strategic')">↳ Background &amp; Context</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-strategic')">↳ Problem Statement</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-strategic')">↳ SMART Objectives</a>
+            <a class="bc-toc-link" onclick="scrollToBC('gc-solution')">2. Proposed Solution</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-solution')">↳ Scope In / Out</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-solution')">↳ Options Considered</a>
+            <a class="bc-toc-link" onclick="scrollToBC('gc-financial')">3. Financial Case</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-financial')">↳ Costs &amp; Savings</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-financial')">↳ ROI Calculator</a>
+            <a class="bc-toc-link" onclick="scrollToBC('gc-commercial')">4. Commercial Case</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-commercial')">↳ Procurement Strategy</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-commercial')">↳ SLAs &amp; KPIs</a>
+            <a class="bc-toc-link" onclick="scrollToBC('gc-governance')">5. Project Management</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-governance')">↳ Team &amp; Stakeholders</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-governance')">↳ Milestones &amp; Risks</a>
+            <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('gc-governance')">↳ Sustainment Plan</a>
+          </div>
+
+          <!-- Custom ToC (dynamic) -->
+          <div id="bc-toc-custom" style="display:none;flex-direction:column;gap:1px">
+            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 4px">Generated Sections</div>
+            <div id="bc-toc-custom-links" style="display:flex;flex-direction:column;gap:1px">
+              <div style="font-size:10px;color:var(--text3);padding:6px 8px;font-style:italic">Upload a ToC to generate sections</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /bc left sidebar -->
+
+      <!-- ── RIGHT PANEL: controls header + scrollable form ── -->
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+
+        <!-- Project controls bar (sticky at top of right panel) -->
+        <div style="flex-shrink:0;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <!-- Template switcher -->
+          <div style="display:flex;gap:4px">
+            <button class="bc-status-btn active" id="bc-tpl-sobc" onclick="switchBCTemplate('sobc',this)" style="font-size:10px;padding:5px 10px">SOBC</button>
+            <button class="bc-status-btn" id="bc-tpl-custom" onclick="switchBCTemplate('custom',this)" style="font-size:10px;padding:5px 10px;background:var(--violet-lt);border-color:var(--violet);color:var(--violet)">✦ Custom ToC</button>
+          </div>
+          <div style="width:1px;height:20px;background:var(--border)"></div>
+          <!-- Project select -->
+          <select id="bc-project-select" onchange="loadBC(this.value);renderBCSavedList();" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px;min-width:160px">
+            <option value="cataract">Cataract SIB</option>
+            <option value="agyw">AGYW SRH SIB</option>
+            <option value="rhd">Paediatric RHD SIB</option>
+          </select>
+          <!-- Status pills -->
+          <div style="display:flex;gap:4px">
+            <button class="bc-status-btn active" onclick="setBCStatus('Draft',this)" style="font-size:10px;padding:5px 10px">Draft</button>
+            <button class="bc-status-btn" onclick="setBCStatus('In Review',this)" style="font-size:10px;padding:5px 10px">In Review</button>
+            <button class="bc-status-btn" onclick="setBCStatus('Final',this)" style="font-size:10px;padding:5px 10px">Final</button>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button class="btn btn-teal btn-sm" onclick="saveBC()">💾 Save</button>
+            <button class="btn btn-gold btn-sm" onclick="exportBC()">⬇ Export</button>
+          </div>
+        </div>
+
+        <!-- Scrollable form area -->
+        <div style="flex:1;overflow-y:auto;padding:16px">
+
+          <!-- ══ SOBC TEMPLATE ══ -->
+          <div id="bc-form-sobc">
+
+          <!-- ══ SECTION 1: INTRODUCTION ══ -->
+          <div class="bc-section" id="bc-intro">
+            <h3>1. Introduction &amp; Background <span style="font-size:10px;color:var(--text3);font-weight:400">Core structure — adapt content per project</span></h3>
+            <div class="field"><label>Project / Programme Title</label><input type="text" id="bc-title" placeholder="e.g. Adolescent Girls &amp; Young Women SRH Social Outcomes Based Contract — South Africa 2026"></div>
+            <div class="field"><label>Introduction &amp; Background</label><textarea class="rich-text" id="bc-background" placeholder="Provide the policy and programmatic context for this SOBC. Describe the health or social problem, existing government commitments, and the rationale for an outcomes-based approach..."></textarea></div>
+          </div>
+
+          <div class="bc-section gold" id="bc-agyw">
+            <h3>1a. Focus Population</h3>
+            <div class="fg2">
+              <div class="field"><label>Target Population</label><input type="text" id="bc-population" placeholder="e.g. Adolescent Girls &amp; Young Women (AGYW) aged 15–24"></div>
+              <div class="field"><label>Geographic Scope</label><input type="text" id="bc-geo-focus" placeholder="e.g. Gauteng, KwaZulu-Natal, Western Cape"></div>
+            </div>
+            <div class="field"><label>Why This Population — Rationale &amp; Evidence of Need</label><textarea class="rich-text" id="bc-population-rationale" placeholder="Describe why this population is prioritised: burden of disease, vulnerability, policy priority, evidence of unmet need in SA context..."></textarea></div>
+            <div class="field"><label>Key Statistics &amp; Epidemiological Data</label><textarea id="bc-epi-data" rows="3" placeholder="e.g. HIV incidence rates, teenage pregnancy rates, SRH service utilisation gaps, data sources (DHIS, SABSSM, Stats SA)..."></textarea></div>
+          </div>
+
+          <div class="bc-section violet" id="bc-what">
+            <h3>1b. What is a Social Impact Bond / SOBC?</h3>
+            <div class="field"><label>Definition &amp; Mechanism</label><textarea class="rich-text" id="bc-sobc-def" placeholder="A Social Outcomes Based Contract (SOBC) is a results-based financing mechanism in which a social investor provides upfront capital to fund service delivery. Government repays the investor only if pre-agreed outcomes are achieved and independently verified..."></textarea></div>
+            <div class="field"><label>How This SOBC Works — Programme-Specific Description</label><textarea id="bc-sobc-specific" rows="3" placeholder="Describe the specific mechanism for this programme: who pays, who delivers, what outcomes trigger payment, how verification works..."></textarea></div>
+          </div>
+
+          <div class="bc-section" id="bc-importance">
+            <h3>1c. Importance of the SOBC for South Africa</h3>
+            <div class="field"><label>Policy Alignment</label><textarea id="bc-policy" rows="3" placeholder="Align to NSP, NDP, PHC re-engineering, Universal Health Coverage goals, NHI rollout, Sustainable Development Goals..."></textarea></div>
+            <div class="field"><label>Value Proposition for Government</label><textarea class="rich-text" id="bc-value-prop" placeholder="Why is an outcomes-based approach preferable to traditional grant or tender funding for this intervention? Address risk transfer, innovation incentives, accountability..."></textarea></div>
+          </div>
+
+          <!-- ══ SECTION 2: DESIGN & IMPLEMENTATION ══ -->
+          <div class="bc-section teal" id="bc-design" style="border-left-color:var(--teal)">
+            <h3>2. Design &amp; Implementation of the SOBC Structure</h3>
+            <div class="field"><label>Overall SOBC Design Summary</label><textarea class="rich-text" id="bc-design-summary" placeholder="Summarise the overall structure: contract term, total outcomes targeted, payment-by-results model, key milestones..."></textarea></div>
+          </div>
+
+          <div class="bc-section gold" id="bc-implementer">
+            <h3>2a. The Implementer</h3>
+            <div class="fg2">
+              <div class="field"><label>Implementing Organisation(s)</label><input type="text" id="bc-implementer-name" placeholder="e.g. NGO name, consortium lead, NPC"></div>
+              <div class="field"><label>Organisational Type</label><input type="text" id="bc-implementer-type" placeholder="e.g. NPC, Section 21 company, consortium"></div>
+            </div>
+            <div class="field"><label>Track Record &amp; Capacity</label><textarea id="bc-implementer-track" rows="3" placeholder="Describe the implementer's relevant experience, geographic reach, existing infrastructure, accreditation and key personnel..."></textarea></div>
+            <div class="field"><label>Role in SOBC &amp; Accountability</label><textarea id="bc-implementer-role" rows="2" placeholder="Responsibilities under the SOBC, reporting requirements, performance management framework..."></textarea></div>
+          </div>
+
+          <div class="bc-section violet" id="bc-geo">
+            <h3>2b. Geographical Focus</h3>
+            <div class="fg2">
+              <div class="field"><label>Provinces</label><input type="text" id="bc-provinces" placeholder="e.g. Gauteng, KwaZulu-Natal, Eastern Cape"></div>
+              <div class="field"><label>Districts / Sub-districts</label><input type="text" id="bc-districts" placeholder="e.g. eThekwini, Ekurhuleni, Buffalo City Metro"></div>
+            </div>
+            <div class="field"><label>Site Selection Rationale</label><textarea id="bc-site-rationale" rows="3" placeholder="Why these locations? Burden of disease, service gaps, implementer presence, government priority districts, data availability..."></textarea></div>
+            <div class="field"><label>Reach (Estimated Beneficiaries)</label><input type="text" id="bc-reach" placeholder="e.g. 10,000 AGYW across 3 provinces over 3 years"></div>
+          </div>
+
+          <div class="bc-section" id="bc-baselines">
+            <h3>2c. Baselines, Targets &amp; Payment Metrics</h3>
+            <div class="field"><label>Primary Outcome Metric</label><input type="text" id="bc-prim-outcome" placeholder="e.g. HIV-negative status at 12-month follow-up; new contraceptive uptake"></div>
+            <div class="field"><label>Baseline Data</label><textarea id="bc-baseline" rows="3" placeholder="Current baseline rates from which improvement will be measured. Data source, year, methodology used to establish baseline..."></textarea></div>
+            <div class="field"><label>Targets &amp; Payment Schedule</label><textarea class="rich-text" id="bc-targets" placeholder="Year 1 target: X outcomes @ R___/outcome = R___&#10;Year 2 target: X outcomes @ R___/outcome = R___&#10;Year 3 target: X outcomes @ R___/outcome = R___&#10;Total outcomes: X | Total payment cap: R___"></textarea></div>
+            <div class="fg2">
+              <div class="field"><label>Cost per Verified Outcome (R)</label><input type="number" id="bc-cpo" placeholder="e.g. 4500" oninput="bcFinCalc()"></div>
+              <div class="field"><label>Total Target Outcomes</label><input type="number" id="bc-target-outcomes" placeholder="e.g. 1000" oninput="bcFinCalc()"></div>
+              <div class="field"><label>Investor Return Rate (%)</label><input type="number" id="bc-return" placeholder="e.g. 8"></div>
+              <div class="field"><label>Gov. Saving per Outcome (R)</label><input type="number" id="bc-saving" placeholder="e.g. 12000" oninput="bcFinCalc()"></div>
+            </div>
+            <div id="bc-fin-preview" style="display:none" class="field">
+              <div style="padding:10px;background:var(--teal-lt);border-radius:var(--rs);font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--teal);border-left:3px solid var(--teal)" id="bc-fin-preview-text"></div>
+            </div>
+            <div class="field"><label>Secondary Outcome Measures</label><textarea id="bc-sec-outcomes" rows="3" placeholder="Additional metrics tracked but not tied to payment: e.g. service quality indicators, process milestones, equity disaggregation..."></textarea></div>
+          </div>
+
+          <div class="bc-section gold" id="bc-me">
+            <h3>2d. Monitoring &amp; Evaluation</h3>
+            <div class="fg2">
+              <div class="field"><label>Independent Evaluator</label><input type="text" id="bc-evaluator" placeholder="e.g. University research unit, consulting firm"></div>
+              <div class="field"><label>Evaluation Methodology</label><input type="text" id="bc-eval-method" placeholder="e.g. RCT, quasi-experimental, pre-post with comparison group"></div>
+            </div>
+            <div class="field"><label>Data Collection &amp; Verification Process</label><textarea class="rich-text" id="bc-me-process" placeholder="How outcomes will be measured, verified and reported. Data systems used (DHIS2, electronic records, independent surveys). Frequency of reporting. Dispute resolution process..."></textarea></div>
+            <div class="field"><label>Evaluation Timeline &amp; Reporting</label><textarea id="bc-eval-timeline" rows="2" placeholder="Quarterly progress reports, annual outcome verification, final evaluation report..."></textarea></div>
+          </div>
+
+          <!-- ══ SECTION 3: SOCIAL INVESTOR ══ -->
+          <div class="bc-section violet" id="bc-investor">
+            <h3>3. Social Investor</h3>
+            <div class="fg2">
+              <div class="field"><label>Lead Social Investor</label><input type="text" id="bc-lead-investor" placeholder="e.g. Development finance institution, impact fund, philanthropic funder"></div>
+              <div class="field"><label>Co-investors (if any)</label><input type="text" id="bc-co-investors" placeholder="e.g. Blended finance partners, corporate funders"></div>
+            </div>
+            <div class="field"><label>Investment Amount (R)</label><input type="number" id="bc-invest" placeholder="e.g. 5000000"></div>
+            <div class="field"><label>Investor Profile &amp; Mandate</label><textarea id="bc-investor-profile" rows="3" placeholder="Describe the investor's mandate, experience with outcomes-based financing, due diligence requirements and decision-making timeline..."></textarea></div>
+            <div class="field"><label>Return Structure &amp; Repayment Terms</label><textarea id="bc-return-terms" rows="3" placeholder="Principal repayment terms, return on investment rate, performance bonus structure, risk-sharing arrangements, conditions for non-repayment..."></textarea></div>
+          </div>
+
+          <!-- ══ SECTION 4: APPROVALS & CONTRACTING ══ -->
+          <div class="bc-section" id="bc-approvals">
+            <h3>4. Approvals Required &amp; Contracting Arrangements</h3>
+            <div class="field"><label>Required Government Approvals</label><textarea class="rich-text" id="bc-approvals-list" placeholder="National Treasury approval (PFMA Section 38/39), DoH approval, provincial MEC sign-off, Cabinet memo (if required), legal opinion on contracting mechanism..."></textarea></div>
+            <div class="field"><label>Contracting Structure</label><textarea id="bc-contracting" rows="3" placeholder="Describe the contracts required: Outcomes Fund Agreement (Government ↔ Outcomes Funder), Implementation Agreement (Outcomes Funder ↔ Implementer), Investment Agreement (Outcomes Funder ↔ Investor), Evaluation Agreement..."></textarea></div>
+            <div class="fg2">
+              <div class="field"><label>Contract Start Date</label><input type="date" id="bc-start"></div>
+              <div class="field"><label>Contract End Date</label><input type="date" id="bc-end"></div>
+            </div>
+            <div class="field"><label>Procurement Route</label><input type="text" id="bc-procurement" placeholder="e.g. PFMA, PPPFA, sole-source motivation, competitive tender"></div>
+          </div>
+
+          <!-- ══ SECTION 5: GOVERNANCE ══ -->
+          <div class="bc-section teal" id="bc-governance" style="border-left-color:var(--teal)">
+            <h3>5. Governance Arrangements</h3>
+            <div class="field"><label>Governance Framework</label><textarea class="rich-text" id="bc-governance-framework" placeholder="Describe the overall governance structure: Steering Committee composition, Terms of Reference, meeting frequency, decision-making authority, escalation pathways..."></textarea></div>
+            <div class="field"><label>Roles &amp; Responsibilities</label><textarea id="bc-gov-roles" rows="4" placeholder="Government (Outcomes Payer): ___&#10;Outcomes Funder / Intermediary: ___&#10;Social Investor: ___&#10;Implementer: ___&#10;Independent Evaluator: ___"></textarea></div>
+            <div class="fg2">
+              <div class="field"><label>Government Partners</label><input type="text" id="bc-gov-partners" placeholder="e.g. NDoH, NDOH, Provincial DoH, National Treasury"></div>
+              <div class="field"><label>Service Delivery Partners</label><input type="text" id="bc-service-partners" placeholder="e.g. NGOs, clinics, community health workers"></div>
+            </div>
+          </div>
+
+          <div class="bc-section red" id="bc-risks">
+            <h3>5a. Risks</h3>
+            <div class="field"><label>Key Risks &amp; Mitigations</label><textarea class="rich-text" id="bc-risks-text" placeholder="Risk 1 — Political/Policy: Change in government priorities. Mitigation: Strong stakeholder buy-in, embed in NSP/NDP.&#10;Risk 2 — Financial: Investor withdrawal. Mitigation: Co-investment structure, phased tranches.&#10;Risk 3 — Operational: Implementer under-performance. Mitigation: Performance management framework, step-in rights.&#10;Risk 4 — Evaluation: Data quality or verification disputes. Mitigation: Pre-agreed methodology, independent evaluator.&#10;Risk 5 — Legal: Procurement challenge. Mitigation: Legal opinion obtained prior to award."></textarea></div>
+            <div class="field"><label>Risk Allocation Matrix</label><textarea id="bc-risk-matrix" rows="4" placeholder="Who bears each risk: Government | Investor | Implementer | Shared&#10;e.g. Programme demand risk: Implementer&#10;e.g. Outcome measurement risk: Shared (Gov + Evaluator)&#10;e.g. Investment risk: Investor"></textarea></div>
+          </div>
+
+          <!-- ══ SECTION 6: FUNDING & BUDGET ══ -->
+          <div class="bc-section gold" id="bc-funding">
+            <h3>6. Funding &amp; Budget</h3>
+          </div>
+
+          <div class="bc-section" id="bc-counterpart">
+            <h3>6a. Counterpart Funding</h3>
+            <div class="field"><label>Government Counterpart Contribution</label><textarea id="bc-counterpart-text" rows="3" placeholder="Describe any in-kind or cash government contribution: facility costs, staff time, existing programme budget, health commodities. Quantify where possible..."></textarea></div>
+            <div class="fg2">
+              <div class="field"><label>Counterpart Amount (R)</label><input type="number" id="bc-counterpart-amt" placeholder="e.g. 1500000"></div>
+              <div class="field"><label>Counterpart Source</label><input type="text" id="bc-counterpart-source" placeholder="e.g. DoH programme budget, conditional grant, donor co-funding"></div>
+            </div>
+          </div>
+
+          <div class="bc-section violet" id="bc-outcomes-budget">
+            <h3>6b. Outcomes Funding (Budget)</h3>
+            <div class="field"><label>Outcomes Fund Size (R)</label><input type="number" id="bc-outcomes-fund" placeholder="Total outcomes payment envelope"></div>
+            <div class="field"><label>Budget Breakdown by Year</label><textarea id="bc-budget-breakdown" rows="4" placeholder="Year 1: R___ (X outcomes × R___/outcome)&#10;Year 2: R___ (X outcomes × R___/outcome)&#10;Year 3: R___ (X outcomes × R___/outcome)&#10;Management / evaluation costs: R___&#10;Total programme budget: R___"></textarea></div>
+            <div class="field"><label>MTEF / Budget Vote Alignment</label><input type="text" id="bc-mtef" placeholder="e.g. Budget Vote 18 — Health, Programme 2: NHI, Sub-programme: RMNCH"></div>
+          </div>
+
+          <div class="bc-section teal" id="bc-flow" style="border-left-color:var(--teal)">
+            <h3>6c. Management &amp; Flow of Funds</h3>
+            <div class="field"><label>Fund Flow Structure</label><textarea class="rich-text" id="bc-fund-flow" placeholder="Describe the flow of funds: Government → Outcomes Fund → Investor repayment (if outcomes achieved) → Implementer payment. Include the role of any intermediary or fund manager..."></textarea></div>
+            <div class="field"><label>Timing of Fund Flows</label><textarea id="bc-fund-timing" rows="4" placeholder="Investor upfront payment: Month 0&#10;Implementer payment tranches: Quarterly / bi-annual&#10;Outcome verification: Annual&#10;Government repayment trigger: Following verified outcome report&#10;Final settlement: Month ___ (end of contract)"></textarea></div>
+            <div class="field"><label>Financial Controls &amp; Audit Requirements</label><textarea id="bc-financial-controls" rows="3" placeholder="PFMA compliance, internal audit access, annual external audit, National Treasury oversight requirements, spending reports..."></textarea></div>
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <button class="btn btn-teal" onclick="saveBC()">💾 Save Business Case</button>
+            <button class="btn btn-gold" onclick="exportBC()">⬇ Export .txt</button>
+          </div>
+
+          </div><!-- /bc-form-sobc -->
+
+          <!-- ══ GENERAL TEMPLATE ══ -->
+          <div id="bc-form-general" style="display:none">
+
+            <!-- 1. Strategic Case -->
+            <div class="bc-section" id="gc-strategic">
+              <h3>1. Strategic Case <span style="font-size:10px;color:var(--text3);font-weight:400">The "Why"</span></h3>
+              <div class="field"><label>Background &amp; Current Situation</label><textarea class="rich-text" id="gc-background" placeholder="Describe the current situation and the context that makes this project necessary. Include specific operational data — e.g. capacity constraints, service gaps, or performance shortfalls that can be quantified..."></textarea></div>
+              <div class="field"><label>Alignment with Strategic Goals</label><textarea id="gc-alignment" rows="3" placeholder="Connect this project to your organisation's mission, strategic plans and national priorities. Which specific goals, plans or policy commitments does this project advance?"></textarea></div>
+              <div class="field"><label>Problem Statement</label><textarea class="rich-text" id="gc-problem" placeholder="Define the problem with precision and evidence. Quantify the impact — financial cost, service quality gap, health outcome shortfall — and cite the data source. A strong problem statement makes approval far easier to secure."></textarea></div>
+              <div class="field"><label>Desired Outcomes &amp; SMART Objectives</label><textarea class="rich-text" id="gc-objectives" placeholder="State what success looks like using SMART objectives:&#10;• Specific: What exactly will change?&#10;• Measurable: By how much? What metric?&#10;• Achievable: Is this realistic given resources?&#10;• Relevant: Does it address the problem stated above?&#10;• Time-bound: By when will this be achieved?"></textarea></div>
+              <div class="field"><label>Evidence of Need</label><textarea id="gc-evidence" rows="3" placeholder="Cite supporting evidence: comparative data from peer organisations, published literature, internal audits or needs assessments that validate this investment..."></textarea></div>
+            </div>
+
+            <!-- 2. Proposed Solution -->
+            <div class="bc-section gold" id="gc-solution">
+              <h3>2. Proposed Solution <span style="font-size:10px;color:var(--text3);font-weight:400">The "What"</span></h3>
+              <div class="field"><label>Project Description</label><textarea class="rich-text" id="gc-description" placeholder="Provide a clear, concise explanation of the proposed initiative. What will be implemented, developed or procured? How does it directly address the problem identified in the Strategic Case?"></textarea></div>
+              <div class="field"><label>Scope — What Is Included</label><textarea id="gc-scope-in" rows="3" placeholder="Define clearly what falls within the scope of this project. Be specific about systems, services, locations, populations or time periods covered..."></textarea></div>
+              <div class="field"><label>Scope — What Is Excluded</label><textarea id="gc-scope-out" rows="2" placeholder="Equally important: what is explicitly excluded from this project? Setting boundaries early prevents scope creep and manages stakeholder expectations..."></textarea></div>
+              <div class="field"><label>Options Considered</label><textarea id="gc-options" rows="3" placeholder="Briefly describe the alternatives that were considered and why the proposed solution was selected as the preferred option. This demonstrates due diligence..."></textarea></div>
+            </div>
+
+            <!-- 3. Financial Case -->
+            <div class="bc-section violet" id="gc-financial">
+              <h3>3. Financial Case <span style="font-size:10px;color:var(--text3);font-weight:400">The "How Much"</span></h3>
+              <div class="fg2">
+                <div class="field"><label>Upfront Capital Investment (R)</label><input type="number" id="gc-capex" placeholder="Equipment, software, construction, setup" oninput="gcFinCalc()"></div>
+                <div class="field"><label>Annual Operating Costs (R)</label><input type="number" id="gc-opex" placeholder="Staffing, maintenance, licensing" oninput="gcFinCalc()"></div>
+                <div class="field"><label>Projection Period (Years)</label><input type="number" id="gc-years" value="3" min="1" max="10" oninput="gcFinCalc()"></div>
+                <div class="field"><label>Annual Hard Savings (R)</label><input type="number" id="gc-savings" placeholder="Quantifiable financial benefits" oninput="gcFinCalc()"></div>
+              </div>
+              <div id="gc-fin-preview" style="display:none;margin-bottom:12px">
+                <div style="padding:10px;background:var(--teal-lt);border-radius:var(--rs);font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--teal);border-left:3px solid var(--teal);white-space:pre-line" id="gc-fin-preview-text"></div>
+              </div>
+              <div class="field"><label>Hard Savings (Tangible Benefits)</label><textarea id="gc-hard-savings" rows="3" placeholder="List specific, quantifiable financial benefits: cost reductions, penalties avoided, revenue gains, efficiency savings. Include estimated rand value and the basis for calculation..."></textarea></div>
+              <div class="field"><label>Soft Benefits (Intangible Value)</label><textarea id="gc-soft-savings" rows="3" placeholder="Benefits that are harder to quantify but nonetheless valuable: improved service quality, staff morale, organisational reputation, patient / citizen satisfaction, risk reduction..."></textarea></div>
+              <div class="field"><label>Financial Narrative &amp; Budget Source</label><textarea id="gc-fin-narrative" rows="3" placeholder="Explain the financial projections in plain language. Where will the budget come from? MTEF allocation, donor funding, cost recovery, reprioritisation? What approval process is required?"></textarea></div>
+            </div>
+
+            <!-- 4. Commercial Case -->
+            <div class="bc-section" id="gc-commercial">
+              <h3>4. Commercial Case <span style="font-size:10px;color:var(--text3);font-weight:400">The "How"</span></h3>
+              <div class="fg2">
+                <div class="field"><label>Procurement Strategy</label><select id="gc-procurement" style="padding:7px 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px">
+                  <option value="">Select approach...</option>
+                  <option>Competitive Tender (open)</option>
+                  <option>Restricted Tender</option>
+                  <option>Existing Framework / Panel</option>
+                  <option>Direct Award (motivated)</option>
+                  <option>RFQ — three quotes</option>
+                  <option>Negotiated Contract</option>
+                </select></div>
+                <div class="field"><label>Procurement Justification</label><input type="text" id="gc-procurement-just" placeholder="Why this route? PFMA, PPPFA, urgency, specialist market..."></div>
+              </div>
+              <div class="field"><label>Key Technical Requirements &amp; Specifications</label><textarea id="gc-requirements" rows="3" placeholder="Outline the essential technical, functional and service delivery requirements the solution must meet. These will form the basis of evaluation criteria..."></textarea></div>
+              <div class="field"><label>Service Level Agreements &amp; KPIs</label><textarea id="gc-slas" rows="3" placeholder="Define the measurable performance standards the supplier / partner must meet. Include response times, availability, reporting obligations, quality standards..."></textarea></div>
+              <div class="field"><label>Contract Management Approach</label><textarea id="gc-contract-mgmt" rows="2" placeholder="How will the contract be managed? Who is the contract manager? What performance review cadence is planned? How will disputes be resolved?"></textarea></div>
+            </div>
+
+            <!-- 5. Project Management & Governance -->
+            <div class="bc-section teal" id="gc-governance" style="border-left-color:var(--teal)">
+              <h3>5. Project Management &amp; Governance <span style="font-size:10px;color:var(--text3);font-weight:400">The "Who &amp; When"</span></h3>
+              <div class="fg2">
+                <div class="field"><label>Project Sponsor</label><input type="text" id="gc-sponsor" placeholder="Executive accountable for this project"></div>
+                <div class="field"><label>Project Manager</label><input type="text" id="gc-pm" placeholder="Day-to-day delivery lead"></div>
+                <div class="field"><label>Project Start Date</label><input type="date" id="gc-start"></div>
+                <div class="field"><label>Target Completion Date</label><input type="date" id="gc-end"></div>
+              </div>
+              <div class="field"><label>Project Team &amp; Stakeholders</label><textarea id="gc-team" rows="3" placeholder="List key team members and their roles: clinical lead, finance lead, IT/systems lead, operations lead, communications lead. Note which external stakeholders need to be engaged and when..."></textarea></div>
+              <div class="field"><label>High-Level Milestones &amp; Timeline</label><textarea class="rich-text" id="gc-milestones" placeholder="Phase 1 — Scoping &amp; Approval: Dates___&#10;Phase 2 — Procurement &amp; Setup: Dates___&#10;Phase 3 — Implementation: Dates___&#10;Phase 4 — Go-live &amp; Stabilisation: Dates___&#10;Phase 5 — Evaluation &amp; Closeout: Dates___"></textarea></div>
+              <div class="field"><label>Risks &amp; Mitigation Strategies</label><textarea class="rich-text" id="gc-risks" placeholder="Identify the key risks to delivery — technology, people, budget, timeline, stakeholder resistance — and the specific steps you will take to mitigate each one. Honest risk identification increases credibility with approvers..."></textarea></div>
+              <div class="field"><label>Sustainment Plan</label><textarea id="gc-sustainment" rows="3" placeholder="How will the benefits of this project be maintained after implementation is complete? Who owns ongoing operations? What budget is allocated for year 2 and beyond? How will performance continue to be monitored?"></textarea></div>
+            </div>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+              <button class="btn btn-teal" onclick="saveBC()">💾 Save Business Case</button>
+              <button class="btn btn-gold" onclick="exportBC()">⬇ Export .txt</button>
+            </div>
+
+          </div><!-- /bc-form-general -->
+
+          <!-- ══ CUSTOM TOC TEMPLATE ══ -->
+          <div id="bc-form-custom" style="display:none">
+
+            <!-- Upload / paste zone -->
+            <div style="background:var(--violet-lt);border:2px dashed var(--violet);border-radius:var(--r);padding:20px 22px;margin-bottom:16px">
+              <div style="font-size:13px;font-weight:700;color:var(--violet);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Upload or paste your Table of Contents / Outline
+              </div>
+              <p style="font-size:11px;color:var(--text2);margin-bottom:14px">Paste your ToC, section headings or outline below. The system will parse the structure and generate a custom fillable business case form — one text area per section. You can also upload a <strong>.txt</strong> file.</p>
+              <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+                <input type="file" id="bc-toc-file" accept=".txt,.md" style="display:none" onchange="bcLoadToCFile(this)">
+                <button class="btn btn-sm" style="border-color:var(--violet);color:var(--violet)" onclick="document.getElementById('bc-toc-file').click()">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload .txt file
+                </button>
+                <span style="font-size:10px;color:var(--text3)">or paste directly below</span>
+              </div>
+              <textarea id="bc-toc-input" rows="10" placeholder="Paste your table of contents or outline here. For example:
+
+1. Executive Summary
+2. Background and Strategic Context
+3. Problem Statement
+4. Objectives of the Financing Strategy
+5. Market and Stakeholder Analysis
+   5.1 Key Stakeholders
+   5.2 Funding Landscape
+6. Funding Requirements
+7. Financing Options Assessment
+8. Recommended Financing Model
+9. Economic, Social and Health Impact
+10. Risk Assessment
+11. Implementation Roadmap
+12. Conclusions and Recommendations
+
+The system will generate a fillable section for each heading." style="width:100%;padding:10px;border:1.5px solid var(--violet);border-radius:var(--rs);background:var(--surface);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;line-height:1.6;resize:vertical"></textarea>
+              <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+                <button class="btn btn-violet" onclick="bcGenerateCustomForm()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Generate Form from ToC
+                </button>
+                <button class="btn btn-sm" onclick="bcClearCustomForm()">Clear &amp; Reset</button>
+                <span id="bc-custom-status" style="font-size:11px;color:var(--teal);display:none"></span>
+              </div>
+            </div>
+
+            <!-- Generated form renders here -->
+            <div id="bc-custom-form-output"></div>
+
+            <div id="bc-custom-save-row" style="display:none;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+              <button class="btn btn-teal" onclick="saveBC()">💾 Save Business Case</button>
+              <button class="btn btn-gold" onclick="exportBC()">⬇ Export .txt</button>
+            </div>
+
+          </div><!-- /bc-form-custom -->
+
+        </div><!-- /scrollable form area -->
+      </div><!-- /right panel -->
+    </div><!-- /view-businesscase -->
+
+    <!-- ══ RISK ══ -->
+    <div id="view-risk" class="view" style="overflow:auto;flex-direction:column">
+      <div class="g2" style="margin-bottom:0">
+        <div class="card">
+          <div class="card-head red">Add Risk</div>
+          <div class="field"><label>Risk Title</label><input type="text" id="risk-title" placeholder="e.g. Government partner delays procurement"></div>
+          <div class="fg2">
+            <div class="field"><label>Category</label><select id="risk-cat"><option>Political</option><option>Financial</option><option>Operational</option><option>Clinical</option><option>Legal</option><option>Reputational</option></select></div>
+            <div class="field"><label>Likelihood</label><select id="risk-likelihood"><option>Low</option><option>Medium</option><option>High</option></select></div>
+          </div>
+          <div class="fg2">
+            <div class="field"><label>Impact</label><select id="risk-impact"><option>Low</option><option>Medium</option><option>High</option></select></div>
+            <div class="field"><label>Owner</label><input type="text" id="risk-owner" placeholder="Risk owner"></div>
+          </div>
+          <div class="field"><label>Description</label><textarea id="risk-desc" rows="2" placeholder="Describe the risk..."></textarea></div>
+          <div class="field"><label>Mitigation</label><textarea id="risk-mitigation" rows="2" placeholder="Mitigation strategy..."></textarea></div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-red" onclick="addRisk()">+ Add Risk</button></div>
+        </div>
+        <div class="card"><div class="card-head">Risk Summary</div><div id="risk-summary"></div></div>
+      </div>
+      <div class="card"><div class="card-head gold">Risk Register</div><div id="risk-list"></div></div>
+    </div>
+
+    <!-- ══ STAKEHOLDERS ══ -->
+    <div id="view-stakeholders" class="view" style="overflow:auto;flex-direction:column">
+      <div class="g2" style="margin-bottom:0">
+        <div class="card">
+          <div class="card-head">Add Stakeholder</div>
+          <div class="fg2">
+            <div class="field"><label>Name</label><input type="text" id="sh-name" placeholder="Full name"></div>
+            <div class="field"><label>Organisation</label><input type="text" id="sh-org" placeholder="Organisation"></div>
+          </div>
+          <div class="fg2">
+            <div class="field"><label>Role / Type</label><select id="sh-role"><option>Government</option><option>Investor</option><option>Delivery Partner</option><option>Evaluator</option><option>Legal</option><option>Internal</option><option>Community</option></select></div>
+            <div class="field"><label>Influence</label><select id="sh-influence"><option>High</option><option>Medium</option><option>Low</option></select></div>
+          </div>
+          <div class="fg2">
+            <div class="field"><label>Email</label><input type="email" id="sh-email" placeholder="email@org.za"></div>
+            <div class="field"><label>Phone</label><input type="tel" id="sh-phone" placeholder="+27..."></div>
+          </div>
+          <div class="field"><label>Notes</label><textarea id="sh-notes" rows="2" placeholder="Key interests, engagement strategy..."></textarea></div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-teal" onclick="addStakeholder()">+ Add</button></div>
+        </div>
+        <div class="card"><div class="card-head">Stakeholder Map</div><div id="sh-summary"></div></div>
+      </div>
+      <div id="stakeholder-list"></div>
+    </div>
+
+    <!-- ══ PAYROLL ══ -->
+    <div id="view-payroll" class="view" style="overflow:auto;flex-direction:column">
+      <div id="next-close-box" class="next-close-box">
+        <div class="nc-icon"><svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--gold)" id="nc-title">Loading...</div><div style="font-size:11px;color:var(--text2);margin-top:3px" id="nc-detail"></div></div>
+      </div>
+      <div class="card"><div class="card-head gold">Payroll Schedule 2026–2027</div>
+        <div class="table-wrap"><table><thead><tr><th>Month</th><th>Closing Date</th><th>Pay Date</th><th>Status</th><th>Hours in Period</th><th>Est. Claim (R)</th></tr></thead><tbody id="payroll-body"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ STATS & AI ══ -->
+    <div id="view-stats" class="view" style="overflow:auto;flex-direction:column">
+      <div class="api-key-wrap"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><label>Groq API Key</label><input type="password" id="groq-key" placeholder="gsk_..." oninput="saveGroqKey(this.value)"><a href="https://console.groq.com/keys" target="_blank" style="font-size:10px;color:var(--teal);white-space:nowrap">Get free key ↗</a></div>
+      <div id="live-stats" class="g4" style="margin-bottom:14px"></div>
+      <div class="g2">
+        <div class="card"><div class="card-head">Quick Analysis</div><div class="chip-grid" id="stats-chips">
+          <div class="chip" onclick="statsPrompt('Full project health check: KRAs, deliverables, timeline. Top 3 recommendations.')">Full Health Check</div>
+          <div class="chip" onclick="statsPrompt('Projected completion date based on current logging pace. Am I on track?')">Projected Completion</div>
+          <div class="chip" onclick="statsPrompt('KRA balance analysis. Where am I over/under-invested vs targets?')">KRA Balance</div>
+          <div class="chip" onclick="statsPrompt('Top risks and what to prioritise this week.')">Risk & Priorities</div>
+          <div class="chip" onclick="statsPrompt('Earnings to date, projected total, payroll deadlines to flag.')">Earnings Summary</div>
+        </div></div>
+        <div class="card"><div class="card-head violet">SIB Content Prompts</div><div class="chip-grid">
+          <div class="chip" onclick="aiPrompt('Draft an executive summary for a cataract surgery Social Impact Bond in South Africa')">Cataract SIB exec summary</div>
+          <div class="chip" onclick="aiPrompt('Write a literature review outline for SRH outcomes for AGYW as basis for a Social Impact Bond')">AGYW SRH literature</div>
+          <div class="chip" onclick="aiPrompt('Draft talking points for a government stakeholder presentation on a paediatric RHD valve replacement SIB')">RHD SIB presentation</div>
+          <div class="chip" onclick="aiPrompt('Outline key components of a grant proposal for SIB funding including theory of change and evaluation design')">Grant proposal outline</div>
+          <div class="chip" onclick="aiPrompt('Draft a MOA outline for a SIB delivery partner in South Africa, key clauses')">MOA outline</div>
+          <div class="chip" onclick="aiPrompt('Explain how to structure a financial model for a health SIB: cost per outcome, investor returns, sensitivity analysis')">Financial model guide</div>
+        </div></div>
+      </div>
+      <div class="card"><div class="card-head violet">Ask the AI Agent</div>
+        <div class="field"><textarea id="ai-prompt-input" rows="3" placeholder="Ask about your contract, SIB projects, or request content for business cases, proposals, reports..."></textarea></div>
+        <div style="display:flex;justify-content:flex-end"><button class="btn btn-violet" onclick="runAI()">Ask Groq →</button></div>
+        <div class="ai-loading" id="ai-loading"><div class="spinner"></div><span>Groq is thinking...</span></div>
+        <div class="ai-output" id="ai-output"></div>
+        <div id="ai-actions" style="display:none;justify-content:flex-end;margin-top:7px"><button class="btn btn-sm" onclick="copyAI()">Copy</button></div>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>➕ New Task / Milestone</h3>
+    <div class="field"><label>Task Name</label><input type="text" id="m-name" placeholder="e.g. Business Case – TB Vaccine – Outline"></div>
+    <div class="fg2">
+      <div class="field"><label>KRA Category</label><select id="m-kra"><option value="Research">Research (50%)</option><option value="Project Management">Project Management (40%)</option><option value="Research Admin">Research Admin (5%)</option><option value="Dissemination">Presentation & Dissemination (5%)</option></select></div>
+      <div class="field"><label>Task Type</label><select id="m-type"><option value="Task">Task</option><option value="Milestone">Milestone</option><option value="Research">Research</option><option value="Admin">Admin</option></select></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Project Name</label><input type="text" id="m-project" placeholder="e.g. TBV-Finance, Grant X, Cataract SIB"></div>
+      <div class="field"><label>Effort (hours)</label><input type="number" id="m-effort" value="2" min="0.5" step="0.5"></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Plan Date (From)</label><input type="date" id="m-date-from"></div>
+      <div class="field"><label>Plan Date (To)</label><input type="date" id="m-date-to"></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Due Date</label><input type="date" id="m-due"></div>
+      <div class="field"><label>Status</label><select id="m-status"><option value="Not started">Not started</option><option value="In progress">In progress</option><option value="Complete">Complete</option><option value="Blocked">Blocked</option></select></div>
+    </div>
+    <div class="field"><label>Reverse Planned?</label><select id="m-reverse"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+    <div class="field"><label>Notes</label><textarea id="m-notes" rows="2" placeholder="Notes, dependencies, context..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-teal" onclick="saveNewTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════════════════
+const CONTRACT_START = new Date('2026-06-15');
+const TOTAL = 520;
+const PAYROLL = [
+  {m:'Jun-26',close:'2026-06-05',pay:'2026-06-19'},
+  {m:'Jul-26',close:'2026-07-06',pay:'2026-07-20'},
+  {m:'Aug-26',close:'2026-08-06',pay:'2026-08-20'},
+  {m:'Sep-26',close:'2026-09-04',pay:'2026-09-18'},
+  {m:'Oct-26',close:'2026-10-05',pay:'2026-10-20'},
+  {m:'Nov-26',close:'2026-11-06',pay:'2026-11-20'},
+  {m:'Dec-26',close:'2026-12-04',pay:'2026-12-18'},
+  {m:'Jan-27',close:'2027-01-05',pay:'2027-01-20'},
+  {m:'Feb-27',close:'2027-02-05',pay:'2027-02-19'},
+];
+const KRA_CFG = {
+  'Research':           {target:50,color:'#3B82F6',badge:'b-blue',cls:'kra-Research'},
+  'Project Management': {target:40,color:'#8B5CF6',badge:'b-violet',cls:'kra-PM'},
+  'Research Admin':     {target:5, color:'#F59E0B',badge:'b-gold',cls:'kra-Admin'},
+  'Dissemination':      {target:5, color:'#10B981',badge:'b-teal',cls:'kra-Dissemination'},
+};
+const SH_COLORS=['#0B7B74','#5A2888','#A0720A','#1A5C8A','#C0392B','#27AE60'];
+const DEFAULT_DELIVS=[
+  {id:'d01',text:'Business case: cataract surgery SIB',kra:'Research',done:false},
+  {id:'d02',text:'Business case: SRH for AGYW SIB',kra:'Research',done:false},
+  {id:'d03',text:'Business case: paediatric RHD valve SIB',kra:'Research',done:false},
+  {id:'d04',text:'Grant proposal contribution',kra:'Research',done:false},
+  {id:'d05',text:'Peer-reviewed journal article contribution',kra:'Research',done:false},
+  {id:'d06',text:'SIB portfolio integrated project plan',kra:'Project Management',done:false},
+  {id:'d07',text:'Government department partnerships established',kra:'Project Management',done:false},
+  {id:'d08',text:'Social investor networking arrangements',kra:'Project Management',done:false},
+  {id:'d09',text:'Financial model inputs completed',kra:'Project Management',done:false},
+  {id:'d10',text:'Services rendered contracts submitted on time',kra:'Project Management',done:false},
+  {id:'d11',text:'Funder progress reports delivered',kra:'Project Management',done:false},
+  {id:'d12',text:'MOAs and contracts finalised with legal',kra:'Project Management',done:false},
+  {id:'d13',text:'Research data filing and documentation',kra:'Research Admin',done:false},
+  {id:'d14',text:'Audit preparation complete',kra:'Research Admin',done:false},
+  {id:'d15',text:'Community/stakeholder feedback reports',kra:'Dissemination',done:false},
+  {id:'d16',text:'Conference presentation(s) delivered',kra:'Dissemination',done:false}
+];
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let tasks=[], tsEntries=[], delivs=[], risks=[], stakeholders=[], businessCases={};
+let rate=0, groqKey='', ganttMonths=6, calYear, calMonth, selectedTaskId=null, calFilter='all', editingTsId=null;
+
+function loadState(){
+  try{tasks=JSON.parse(localStorage.getItem('sib3_tasks')||'[]');}catch(e){tasks=[];}
+  try{tsEntries=JSON.parse(localStorage.getItem('sib3_ts')||'[]');}catch(e){tsEntries=[];}
+  try{const d=JSON.parse(localStorage.getItem('sib3_d')||'null');delivs=d&&d.length?d:JSON.parse(JSON.stringify(DEFAULT_DELIVS));}catch(e){delivs=JSON.parse(JSON.stringify(DEFAULT_DELIVS));}
+  try{risks=JSON.parse(localStorage.getItem('sib3_risks')||'[]');}catch(e){risks=[];}
+  try{stakeholders=JSON.parse(localStorage.getItem('sib3_sh')||'[]');}catch(e){stakeholders=[];}
+  try{businessCases=JSON.parse(localStorage.getItem('sib3_bc')||'{}');}catch(e){businessCases={};}
+  try{rate=parseFloat(localStorage.getItem('sib3_r')||'0');}catch(e){rate=0;}
+  try{groqKey=localStorage.getItem('sib3_groq')||'';}catch(e){groqKey='';}
+}
+function persist(){
+  try{
+    localStorage.setItem('sib3_tasks',JSON.stringify(tasks));
+    localStorage.setItem('sib3_ts',JSON.stringify(tsEntries));
+    localStorage.setItem('sib3_d',JSON.stringify(delivs));
+    localStorage.setItem('sib3_risks',JSON.stringify(risks));
+    localStorage.setItem('sib3_sh',JSON.stringify(stakeholders));
+    localStorage.setItem('sib3_bc',JSON.stringify(businessCases));
+    localStorage.setItem('sib3_r',String(rate));
+    localStorage.setItem('sib3_groq',groqKey);
+  }catch(e){}
+}
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+function uid(){return '_'+Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function v(id){return(document.getElementById(id)||{}).value||'';}
+function set(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function fmt2(n){return n.toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtDate(s){if(!s)return'—';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
+function totalHrs(){return tsEntries.reduce((s,e)=>s+e.hrs,0);}
+function totalAmt(){return tsEntries.reduce((s,e)=>s+e.amt,0);}
+
+let toastT;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=(type==='ok'?'✓ ':'✕ ')+msg;
+  el.className='toast '+type+' show';
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ════════════════════════════════════════════════════════
+// THEME & SIDEBAR
+// ════════════════════════════════════════════════════════
+function toggleTheme(){
+  const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('theme-btn').textContent=t==='dark'?'🌙 Dark':'☀ Light';
+  localStorage.setItem('sib3_theme',t);
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
+
+// ════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ════════════════════════════════════════════════════════
+const VIEW_LABELS={calendar:'Calendar (Plan Date)',list:'All Tasks',timesheet:'SIB Time Log',kra:'KRA & Deliverables',gantt:'Gantt Chart',businesscase:'Business Case',risk:'Risk Register',stakeholders:'Stakeholders',payroll:'Payroll',stats:'Stats & AI'};
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('view-'+name);if(el)el.classList.add('active');
+  // sidebar
+  document.querySelectorAll('.sb-item').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+name+"'"))b.classList.add('active');
+  });
+  set('topbar-sub',VIEW_LABELS[name]||name);
+  // view tabs highlight
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('active'));
+  const vtMatch=document.querySelector(`.vt-btn[onclick*="'${name}'"]`);if(vtMatch)vtMatch.classList.add('active');
+  if(name==='gantt')renderGantt();
+  if(name==='stats')renderLiveStats();
+  if(name==='list')renderAllTasksTable();
+  if(name==='kra')renderKRA();
+  if(name==='payroll')renderPayroll();
+  if(name==='risk')renderRisks();
+  if(name==='stakeholders')renderStakeholders();
+  if(name==='businesscase')renderBCSavedList();
+}
+
+// ════════════════════════════════════════════════════════
+// METRICS
+// ════════════════════════════════════════════════════════
+function updateMetrics(){
+  const logged=totalHrs(), remain=TOTAL-logged;
+  const now=new Date(), days=Math.max(0,Math.floor((now-CONTRACT_START)/86400000));
+  const pct=Math.min(100,(logged/TOTAL)*100);
+  const done=delivs.filter(d=>d.done).length;
+  set('sb-logged',logged.toFixed(1));
+  set('sb-remain',remain.toFixed(1));
+  set('sb-pct',pct.toFixed(1)+'%');
+  const pb=document.getElementById('sb-prog');if(pb)pb.style.width=pct.toFixed(1)+'%';
+  set('mt-logged',logged.toFixed(1));set('mt-remain',remain.toFixed(1));set('mt-days',days);
+  set('mt-daily','~'+Math.ceil(remain/8)+' working days');
+  const tp=document.getElementById('ts-pfill');if(tp)tp.style.width=pct.toFixed(1)+'%';
+  set('ts-ppct',pct.toFixed(1)+'%');
+  if(rate>0){set('mt-amt','R '+Math.round(totalAmt()).toLocaleString());set('mt-rate-sub','@ R'+rate.toLocaleString()+'/hr');}
+}
+function updateRate(){
+  rate=parseFloat(v('rate-global'))||0;
+  tsEntries.forEach(e=>e.amt=e.hrs*rate);
+  persist();updateMetrics();renderTS();renderPayroll();updatePreview();
+}
+
+// ════════════════════════════════════════════════════════
+// CALENDAR
+// ════════════════════════════════════════════════════════
+function setFilter(f,btn){
+  calFilter=f;
+  // Sync active state across ALL filter button groups using data-filter attribute
+  document.querySelectorAll('.cal-filter-btn').forEach(b=>{
+    const bFilter=b.getAttribute('data-filter')||b.textContent.trim();
+    b.classList.toggle('active', bFilter===f);
+  });
+  renderCalendar();
+}
+function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();renderCalendar();}
+
+function getTasksForDate(dateStr){
+  return tasks.filter(t=>{
+    const match=t.dateFrom===dateStr||(t.dateTo&&t.dateTo>=dateStr&&t.dateFrom<=dateStr)||t.due===dateStr;
+    if(!match)return false;
+    if(calFilter==='all')return true;
+    if(calFilter==='Milestone')return t.type==='Milestone';
+    return t.kra===calFilter;
+  });
+}
+
+function getKRAClass(t){
+  if(t.type==='Milestone')return'kra-Milestone';
+  const map={'Research':'kra-Research','Project Management':'kra-PM','Research Admin':'kra-Admin','Dissemination':'kra-Dissemination'};
+  return map[t.kra]||'kra-Research';
+}
+
+function getStatusClass(s){
+  const m={'In progress':'sp-inprog','Not started':'sp-notstart','Complete':'sp-done','Blocked':'sp-blocked'};
+  return m[s]||'sp-notstart';
+}
+
+function renderCalendar(){
+  const label=new Date(calYear,calMonth,1).toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
+  set('cal-month-label',label);
+  const today=new Date().toISOString().slice(0,10);
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+
+  // Prev month filler
+  for(let i=firstDay-1;i>=0;i--){
+    const cell=document.createElement('div');
+    cell.className='cal-cell other-month';
+    cell.innerHTML=`<div class="cal-cell-date">${prevDays-i}</div>`;
+    grid.appendChild(cell);
+  }
+  // This month
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayTasks=getTasksForDate(ds);
+    const cell=document.createElement('div');
+    let cls='cal-cell';
+    if(ds===today)cls+=' today';
+    cell.className=cls;
+    cell.onclick=(e)=>{if(e.target===cell||e.target.classList.contains('cal-cell-date')||e.target.classList.contains('cal-cell-today-label')){openAddTask(ds);}}
+    let inner=`<div class="cal-cell-date">${d}</div>`;
+    if(ds===today)inner+=`<div class="cal-cell-today-label">Today</div>`;
+    const show=dayTasks.slice(0,3);
+    show.forEach(t=>{
+      const cls2=getKRAClass(t);
+      inner+=`<div class="cal-task-card ${cls2}" onclick="event.stopPropagation();openDetail('${t.id}')">
+        <div class="ctc-dot"></div>
+        <div class="ctc-name">${t.name}</div>
+      </div>`;
+    });
+    if(dayTasks.length>3)inner+=`<div class="cal-more">+${dayTasks.length-3} more</div>`;
+    cell.innerHTML=inner;
+    grid.appendChild(cell);
+  }
+  // Next month filler
+  const total=firstDay+daysInMonth;
+  const rem=total%7===0?0:7-(total%7);
+  for(let i=1;i<=rem;i++){
+    const cell=document.createElement('div');
+    cell.className='cal-cell other-month';
+    cell.innerHTML=`<div class="cal-cell-date">${i}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// DETAIL PANEL
+// ════════════════════════════════════════════════════════
+function openDetail(taskId){
+  const t=tasks.find(x=>x.id===taskId);if(!t)return;
+  selectedTaskId=taskId;
+  const panel=document.getElementById('detail-panel');
+  panel.classList.add('open');
+  set('dp-title',t.name);
+  set('dp-meta','Plan date: '+(t.dateFrom?fmtDate(t.dateFrom)+' → '+fmtDate(t.dateTo||t.dateFrom):'—'));
+  const statusCls=getStatusClass(t.status);
+  document.getElementById('dp-body').innerHTML=`
+    <div class="dp-row"><div class="dp-label">Page</div><div class="dp-val" style="font-weight:600">${t.name}</div></div>
+    <div class="dp-row"><div class="dp-label">Plan Date</div><div class="dp-val">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <input type="date" id="dp-from" value="${t.dateFrom||''}">
+        <span style="color:var(--text3);font-size:11px">→</span>
+        <input type="date" id="dp-to" value="${t.dateTo||t.dateFrom||''}">
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><input type="checkbox" ${t.allDay?'checked':''} id="dp-allday">All-day</label>
+      </div>
+    </div></div>
+    <div class="dp-row"><div class="dp-label">Status</div><div class="dp-val">
+      <select id="dp-status">
+        ${['Not started','In progress','Complete','Blocked'].map(s=>`<option${s===t.status?' selected':''}>${s}</option>`).join('')}
+      </select>
+    </div></div>
+    <div class="dp-row"><div class="dp-label">Due Date</div><div class="dp-val"><input type="date" id="dp-due" value="${t.due||''}"></div></div>
+    <div class="dp-row"><div class="dp-label">KRA Category</div><div class="dp-val">
+      <select id="dp-kra">
+        ${Object.keys(KRA_CFG).map(k=>`<option${k===t.kra?' selected':''}>${k}</option>`).join('')}
+      </select>
+    </div></div>
+    <div class="dp-row"><div class="dp-label">Notes</div><div class="dp-val"><textarea id="dp-notes" rows="3" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Inter',sans-serif">${t.notes||''}</textarea></div></div>
+    <div class="dp-row"><div class="dp-label">Project Name</div><div class="dp-val"><input type="text" id="dp-project" value="${t.project||''}"></div></div>
+    <div class="dp-row"><div class="dp-label">Reverse Planned</div><div class="dp-val"><select id="dp-reverse"><option${t.reverse==='Yes'?' selected':''}>Yes</option><option${t.reverse!=='Yes'?' selected':''}>No</option></select></div></div>
+    <div class="dp-row"><div class="dp-label">Task Type</div><div class="dp-val">
+      <select id="dp-type">
+        ${['Task','Milestone','Research','Admin'].map(tp=>`<option${tp===t.type?' selected':''}>${tp}</option>`).join('')}
+      </select>
+    </div></div>
+    <div class="dp-row"><div class="dp-label">Effort (hrs)</div><div class="dp-val"><input type="number" id="dp-effort" value="${t.effort||2}" min="0.5" step="0.5"></div></div>
+  `;
+}
+
+function saveDetailEdit(){
+  const t=tasks.find(x=>x.id===selectedTaskId);if(!t)return;
+  t.dateFrom=v('dp-from');t.dateTo=v('dp-to');t.allDay=document.getElementById('dp-allday')?.checked;
+  t.status=v('dp-status');t.due=v('dp-due');t.kra=v('dp-kra');
+  t.notes=v('dp-notes');t.project=v('dp-project');t.reverse=v('dp-reverse');
+  t.type=v('dp-type');t.effort=parseFloat(v('dp-effort'))||2;
+  persist();renderCalendar();renderAllTasksTable();toast('Task updated ✓');
+  // Re-render detail
+  openDetail(selectedTaskId);
+}
+
+function deleteCurrentTask(){
+  if(!selectedTaskId||!confirm('Delete this task?'))return;
+  tasks=tasks.filter(t=>t.id!==selectedTaskId);
+  selectedTaskId=null;
+  closeDetail();
+  persist();renderCalendar();renderAllTasksTable();toast('Task deleted','err');
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').classList.remove('open');
+  selectedTaskId=null;
+}
+
+// ════════════════════════════════════════════════════════
+// TASK MODAL
+// ════════════════════════════════════════════════════════
+function openAddTask(dateStr){
+  const today=dateStr||new Date().toISOString().slice(0,10);
+  document.getElementById('m-date-from').value=today;
+  document.getElementById('m-date-to').value=today;
+  document.getElementById('m-name').value='';
+  document.getElementById('m-notes').value='';
+  document.getElementById('m-project').value='';
+  document.getElementById('modal-add').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-add').classList.remove('open');}
+function saveNewTask(){
+  const name=v('m-name');if(!name){toast('Enter a task name.','err');return;}
+  tasks.push({
+    id:uid(),name,kra:v('m-kra'),type:v('m-type'),
+    project:v('m-project'),effort:parseFloat(v('m-effort'))||2,
+    dateFrom:v('m-date-from'),dateTo:v('m-date-to'),due:v('m-due'),
+    status:v('m-status'),reverse:v('m-reverse'),notes:v('m-notes'),allDay:true
+  });
+  persist();renderCalendar();renderAllTasksTable();closeModal();toast('Task added ✓');
+}
+document.getElementById('modal-add').addEventListener('click',e=>{if(e.target===document.getElementById('modal-add'))closeModal();});
+
+// ════════════════════════════════════════════════════════
+// ALL TASKS TABLE
+// ════════════════════════════════════════════════════════
+function renderAllTasksTable(){
+  const tbody=document.getElementById('all-tasks-tbody');if(!tbody)return;
+  const today=new Date().toISOString().slice(0,10);
+  // Task list panel
+  const panel=document.getElementById('task-list-panel');
+  if(panel){
+    panel.innerHTML=tasks.length?tasks.map(t=>{
+      const cfg=KRA_CFG[t.kra]||{badge:'b-gray',color:'#888'};
+      const statusCls=getStatusClass(t.status);
+      return `<div class="task-list-item${t.id===selectedTaskId?' selected':''}" onclick="openDetail('${t.id}')">
+        <div class="tli-title">${t.name}</div>
+        <div class="tli-date">${t.dateFrom?fmtDate(t.dateFrom):''}</div>
+        <div class="tli-tags">
+          <span class="status-pill ${statusCls}"><span class="sp-dot"></span>${t.status||'Not started'}</span>
+          <span class="tli-tag ${cfg.badge}" style="font-size:9px">${(t.kra||'').replace('Project Management','PM').replace('Research Admin','R.Admin')}</span>
+          ${t.project?`<span class="badge b-orange" style="font-size:9px">${t.project}</span>`:''}
+          ${t.type==='Milestone'?`<span class="badge b-orange" style="font-size:9px">Milestone</span>`:''}
+        </div>
+      </div>`;
+    }).join(''):'<div class="empty-state">No tasks yet.<br><br><button class="btn btn-teal btn-sm" onclick="openAddTask()">+ Add Task</button></div>';
+  }
+  if(!tasks.length){tbody.innerHTML=`<tr><td colspan="9" class="empty-state">No tasks yet.</td></tr>`;return;}
+  tbody.innerHTML=tasks.sort((a,b)=>(a.dateFrom||'z').localeCompare(b.dateFrom||'z')).map(t=>{
+    const cfg=KRA_CFG[t.kra]||{badge:'b-gray'};
+    const over=t.due&&t.due<today&&t.status!=='Complete';
+    const statusCls=getStatusClass(t.status);
+    return `<tr>
+      <td style="font-weight:500">${t.name}</td>
+      <td>${t.project?`<span class="badge b-orange">${t.project}</span>`:''}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${t.dateFrom?fmtDate(t.dateFrom):''}</td>
+      <td style="color:${over?'var(--red)':'inherit'};font-size:11px">${t.due?fmtDate(t.due):''}</td>
+      <td><span class="badge ${cfg.badge}">${(t.kra||'').replace('Project Management','PM').replace('Research Admin','R.Admin')}</span></td>
+      <td>${t.type?`<span class="badge b-gray">${t.type}</span>`:''}</td>
+      <td><span class="status-pill ${statusCls}"><span class="sp-dot"></span>${t.status||'Not started'}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace">${t.effort||2}h</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-xs" onclick="openDetail('${t.id}')">✎</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteTask('${t.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function deleteTask(id){if(!confirm('Delete?'))return;tasks=tasks.filter(t=>t.id!==id);persist();renderCalendar();renderAllTasksTable();if(selectedTaskId===id)closeDetail();}
+
+// ════════════════════════════════════════════════════════
+// TIMESHEET
+// ════════════════════════════════════════════════════════
+function calcHrs(df,dt,tf,tt){
+  if(!df||!tf||!tt)return 0;
+  const d1=new Date(df+'T'+tf),d2=new Date((dt||df)+'T'+tt);
+  return Math.max(0,(d2-d1)/3600000);
+}
+function updatePreview(){
+  const h=calcHrs(v('df'),v('dt'),v('tf'),v('tt'));
+  const el=document.getElementById('ts-preview');
+  if(el)el.textContent=h>0?'Session: '+h.toFixed(2)+' hrs'+(rate>0?' · R '+fmt2(h*rate):''):'Fill in dates and times to preview hours';
+}
+['df','dt','tf','tt'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',updatePreview);});
+
+function addTSEntry(){
+  const df=v('df'),dt=v('dt')||v('df'),tf=v('tf'),tt=v('tt');
+  const hrs=calcHrs(df,dt,tf,tt);
+  if(!df||!tf||!tt||hrs<=0){toast('Fill in valid dates and times.','err');return;}
+  tsEntries.push({id:Date.now(),df,dt,tf,tt,hrs,kra:v('log-kra'),act:document.getElementById('activity').value.trim(),out:document.getElementById('ts-output').value.trim(),rate,amt:hrs*rate});
+  persist();renderTS();updateMetrics();renderKRA();renderPayroll();
+  document.getElementById('activity').value='';document.getElementById('ts-output').value='';
+  updatePreview();toast('Session saved — '+hrs.toFixed(2)+' hrs');
+}
+
+function deleteTS(id){if(!confirm('Remove?'))return;tsEntries=tsEntries.filter(e=>e.id!==id);persist();renderTS();updateMetrics();renderKRA();}
+
+let editTsId=null;
+function startTsEdit(id){
+  if(editTsId&&editTsId!==id)cancelTsEdit(editTsId);
+  editTsId=id;
+  const er=document.getElementById('tse-'+id);if(er)er.classList.add('open');
+}
+function cancelTsEdit(id){const er=document.getElementById('tse-'+id);if(er)er.classList.remove('open');if(editTsId===id)editTsId=null;}
+function saveTsEdit(id){
+  const e=tsEntries.find(x=>x.id===id);if(!e)return;
+  const df=gv('ed-df-'+id)||e.df,dt=gv('ed-dt-'+id)||e.dt||e.df;
+  const tf=gv('ed-tf-'+id)||e.tf,tt=gv('ed-tt-'+id)||e.tt;
+  const hrs=calcHrs(df,dt,tf,tt);if(hrs<=0){toast('Invalid times','err');return;}
+  e.df=df;e.dt=dt;e.tf=tf;e.tt=tt;e.hrs=hrs;
+  e.kra=gv('ed-kra-'+id);e.act=gv('ed-act-'+id);e.out=gv('ed-out-'+id);e.amt=hrs*rate;
+  cancelTsEdit(id);persist();renderTS();updateMetrics();renderKRA();toast('Updated ✓');
+}
+function gv(id){return(document.getElementById(id)||{}).value||'';}
+
+function renderTS(){
+  const tb=document.getElementById('ts-tbody');if(!tb)return;
+  if(!tsEntries.length){tb.innerHTML='<tr><td colspan="11" class="empty-state">No sessions yet.</td></tr>';document.getElementById('ts-totals').style.display='none';return;}
+  const kraOpts=Object.keys(KRA_CFG).map(k=>`<option value="${k}">${k}</option>`).join('');
+  tb.innerHTML=tsEntries.map(e=>{
+    const badge=(KRA_CFG[e.kra]||{badge:'b-gray'}).badge;
+    const vr=`<tr id="tsv-${e.id}">
+      <td style="font-size:11px">${e.df}</td><td style="font-size:11px">${e.dt||e.df}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${e.tf}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${e.tt}</td>
+      <td><strong style="font-family:'JetBrains Mono',monospace">${e.hrs.toFixed(2)}</strong></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${(e.rate||rate).toLocaleString()}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${fmt2(e.amt)}</td>
+      <td><span class="badge ${badge}">${(e.kra||'').replace('Project Management','PM').replace('Research Admin','R.Admin')}</span></td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px" title="${(e.act||'').replace(/"/g,'&quot;')}">${e.act||'—'}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px" title="${(e.out||'').replace(/"/g,'&quot;')}">${e.out||'—'}</td>
+      <td><div style="display:flex;gap:3px"><button class="btn-ghost btn btn-xs" onclick="startTsEdit(${e.id})">✎</button><button class="btn btn-danger btn-xs" onclick="deleteTS(${e.id})">✕</button></div></td>
+    </tr>`;
+    const er=`<tr class="ts-edit-row" id="tse-${e.id}"><td colspan="11">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;padding:7px 2px">
+        <div><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">Date From</div><input class="ts-ei" type="date" id="ed-df-${e.id}" value="${e.df}"></div>
+        <div><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">Date To</div><input class="ts-ei" type="date" id="ed-dt-${e.id}" value="${e.dt||e.df}"></div>
+        <div><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">From</div><input class="ts-ei" type="time" id="ed-tf-${e.id}" value="${e.tf}"></div>
+        <div><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">To</div><input class="ts-ei" type="time" id="ed-tt-${e.id}" value="${e.tt}"></div>
+        <div><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">KRA</div><select class="ts-ei" id="ed-kra-${e.id}">${Object.keys(KRA_CFG).map(k=>`<option value="${k}"${e.kra===k?' selected':''}>${k}</option>`).join('')}</select></div>
+        <div style="grid-column:span 2"><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">Activity</div><input class="ts-ei" type="text" id="ed-act-${e.id}" value="${(e.act||'').replace(/"/g,'&quot;')}"></div>
+        <div style="grid-column:span 2"><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:3px">Output</div><input class="ts-ei" type="text" id="ed-out-${e.id}" value="${(e.out||'').replace(/"/g,'&quot;')}"></div>
+      </div>
+      <div style="display:flex;gap:6px;padding-top:7px;border-top:1px solid var(--border)">
+        <button class="btn btn-teal btn-sm" onclick="saveTsEdit(${e.id})">✓ Save</button>
+        <button class="btn btn-sm" onclick="cancelTsEdit(${e.id})">Cancel</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteTS(${e.id})">Delete</button>
+      </div>
+    </td></tr>`;
+    return vr+er;
+  }).join('');
+  document.getElementById('ts-totals').style.display='flex';
+  set('t-hrs',totalHrs().toFixed(2));set('t-amt','R '+fmt2(totalAmt()));
+  const dates=tsEntries.map(e=>e.df).sort();
+  set('t-period',dates[0]+' → '+dates[dates.length-1]);
+}
+
+function exportCSV(){
+  if(!tsEntries.length){alert('No entries.');return;}
+  const hdr='Date From,Date To,Time From,Time To,Hours,Rate,Amount,KRA,Activity,Output\n';
+  const rows=tsEntries.map(e=>[e.df,e.dt||e.df,e.tf,e.tt,e.hrs.toFixed(2),e.rate||rate,e.amt.toFixed(2),e.kra,'"'+(e.act||'')+'"','"'+(e.out||'')+'"'].join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([hdr+rows],{type:'text/csv'}));
+  a.download='SIB_Timesheet_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+function clearTS(){if(!confirm('Delete ALL timesheet entries?'))return;tsEntries=[];persist();renderTS();updateMetrics();}
+
+// Autocomplete
+function getMem(field){const s=new Set();return tsEntries.map(e=>e[field]).filter(x=>{if(x&&x.trim()&&!s.has(x)){s.add(x);return true;}return false;}).reverse();}
+function acF(inputId,dropId){
+  const inp=document.getElementById(inputId),drop=document.getElementById(dropId);
+  const q=inp.value.trim().toLowerCase(),field=inputId==='activity'?'act':'out';
+  const items=getMem(field).filter(x=>!q||x.toLowerCase().includes(q));
+  if(!items.length){drop.innerHTML='';drop.classList.remove('open');return;}
+  drop.innerHTML=items.slice(0,6).map(x=>`<div class="ac-item" onmousedown="acPick('${inputId}','${dropId}',this)" data-val="${x.replace(/"/g,'&quot;')}">${x}</div>`).join('');
+  drop.classList.add('open');
+}
+function acPick(iid,did,el){document.getElementById(iid).value=el.dataset.val;acC(did);}
+function acC(did){document.getElementById(did)?.classList.remove('open');}
+
+// ════════════════════════════════════════════════════════
+// KRA
+// ════════════════════════════════════════════════════════
+function renderKRA(){
+  const totals={};Object.keys(KRA_CFG).forEach(k=>totals[k]=0);
+  tsEntries.forEach(e=>{if(totals[e.kra]!==undefined)totals[e.kra]+=e.hrs;});
+  const total=totalHrs()||1;
+  const barsEl=document.getElementById('kra-bars');
+  if(barsEl)barsEl.innerHTML=Object.entries(KRA_CFG).map(([name,cfg])=>{
+    const targetHrs=(cfg.target/100)*TOTAL,logged=totals[name];
+    const fillW=Math.min(100,(logged/targetHrs)*100);
+    return `<div class="kra-item">
+      <div class="kra-header"><span class="kra-name">${name}</span><span class="kra-info">${logged.toFixed(1)} / ${targetHrs.toFixed(0)} hrs</span></div>
+      <div class="kra-bar"><div class="kra-fill" style="width:${fillW.toFixed(1)}%;background:${cfg.color}"></div></div>
+      <div class="kra-sub">${(logged/total*100).toFixed(1)}% of logged · target ${cfg.target}% · ${Math.max(0,targetHrs-logged).toFixed(1)} hrs remaining</div>
+    </div>`;
+  }).join('');
+  const ragEl=document.getElementById('kra-rag');
+  if(ragEl)ragEl.innerHTML=Object.entries(KRA_CFG).map(([name,cfg])=>{
+    const logged=totals[name],pct=(logged/total*100),diff=pct-cfg.target;
+    const rag=Math.abs(diff)>15?'r':Math.abs(diff)>7?'a':'g';
+    return `<div class="rag rag-${rag}">${rag==='g'?'🟢':rag==='a'?'🟡':'🔴'} ${name} — ${rag==='g'?'On track':rag==='a'?'Mild deviation':'Off target'} (${diff>=0?'+':''}${diff.toFixed(0)}%)</div>`;
+  }).join('');
+  const done=delivs.filter(d=>d.done).length,total2=delivs.length;
+  set('deliv-count',done+' / '+total2);
+  const db=document.getElementById('deliv-bar');if(db)db.style.width=total2?(done/total2*100)+'%':'0%';
+  set('delivs-badge',total2);
+  const listEl=document.getElementById('deliverables-list');if(!listEl)return;
+  listEl.innerHTML=delivs.map(d=>{
+    const cfg=(KRA_CFG[d.kra]||{badge:'b-gray'});
+    return `<div class="deliv-item">
+      <input type="checkbox" id="chk-${d.id}" ${d.done?'checked':''} onchange="toggleDeliv('${d.id}')">
+      <label for="chk-${d.id}" class="deliv-label ${d.done?'done':''}">${d.text}</label>
+      <span class="badge ${cfg.badge}" style="font-size:9px">${(d.kra||'').replace('Project Management','PM').replace('Research Admin','R.Admin')}</span>
+      <div style="display:flex;gap:3px"><button class="btn-ghost btn btn-xs" onclick="startEditDeliv('${d.id}')">✎</button><button class="btn btn-danger btn-xs" onclick="removeDeliv('${d.id}')">✕</button></div>
+    </div>`;
+  }).join('');
+}
+function toggleDeliv(id){const d=delivs.find(x=>x.id===id);if(d){d.done=document.getElementById('chk-'+id).checked;persist();renderKRA();}}
+function startEditDeliv(id){const d=delivs.find(x=>x.id===id);if(!d)return;const name=prompt('Edit deliverable name:',d.text);if(name&&name.trim()){d.text=name.trim();persist();renderKRA();}}
+function removeDeliv(id){if(!confirm('Remove?'))return;delivs=delivs.filter(d=>d.id!==id);persist();renderKRA();}
+function resetDelivs(){if(!confirm('Reset to defaults?'))return;delivs=JSON.parse(JSON.stringify(DEFAULT_DELIVS));persist();renderKRA();}
+function showAddDeliv(){document.getElementById('add-deliv-panel').style.display='block';document.getElementById('new-deliv-text').focus();}
+function hideAddDeliv(){document.getElementById('add-deliv-panel').style.display='none';document.getElementById('new-deliv-text').value='';}
+function addDeliv(){const text=document.getElementById('new-deliv-text').value.trim();if(!text)return;delivs.push({id:uid(),text,kra:document.getElementById('new-deliv-kra').value,done:false});persist();renderKRA();hideAddDeliv();}
+
+// ════════════════════════════════════════════════════════
+// GANTT
+// ════════════════════════════════════════════════════════
+let ganttView=6;
+function setGView(m){
+  ganttView=m;
+  ['gv3','gv6','gv12'].forEach(id=>document.getElementById(id)?.classList.remove('btn-teal'));
+  const btn=document.getElementById('gv'+m);if(btn)btn.classList.add('btn-teal');
+  renderGantt();
+}
+function renderGantt(){
+  const container=document.getElementById('gantt-container');if(!container)return;
+  const start=new Date(CONTRACT_START);
+  const end=new Date(start);end.setMonth(end.getMonth()+ganttView);
+  const totalDays=daysBetween(start.toISOString().slice(0,10),end.toISOString().slice(0,10))||1;
+  const today=new Date().toISOString().slice(0,10);
+  const todayPct=Math.min(100,Math.max(0,(daysBetween(start.toISOString().slice(0,10),today)/totalDays*100)));
+  // Build months
+  let months=[],cursor=new Date(start);
+  while(cursor<end){
+    const mLabel=cursor.toLocaleDateString('en-ZA',{month:'short',year:'2-digit'});
+    const nextM=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);
+    const mDays=Math.min(daysBetween(cursor.toISOString().slice(0,10),nextM.toISOString().slice(0,10)),daysBetween(cursor.toISOString().slice(0,10),end.toISOString().slice(0,10)));
+    months.push({label:mLabel,pct:(mDays/totalDays*100).toFixed(2)+'%'});
+    cursor=nextM;
+  }
+  let html=`<div class="gantt-header-row"><div class="gantt-header-label">Task / Phase</div><div class="gantt-months">${months.map(m=>`<div class="gantt-month-cell" style="width:${m.pct}">${m.label}</div>`).join('')}</div></div>`;
+  // KRA phase rows
+  Object.entries(KRA_CFG).forEach(([name,cfg])=>{
+    html+=`<div class="gantt-row"><div class="gantt-row-label">${name}<div class="grl-sub">Target: ${cfg.target}%</div></div>
+    <div class="gantt-track"><div class="gantt-today-line" style="left:${todayPct.toFixed(1)}%"></div>
+    <div class="gantt-bar" style="left:0%;width:100%;background:${cfg.color};opacity:.4">${name}</div></div></div>`;
+  });
+  // Task milestone rows
+  const taskMilestones=tasks.filter(t=>t.dateFrom).sort((a,b)=>a.dateFrom.localeCompare(b.dateFrom));
+  if(taskMilestones.length){
+    html+=`<div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px">Tasks & Milestones</div>`;
+    taskMilestones.forEach(t=>{
+      const cfg=KRA_CFG[t.kra]||{color:'#888'};
+      const leftD=daysBetween(start.toISOString().slice(0,10),t.dateFrom);
+      const leftPct=Math.max(0,Math.min(99,(leftD/totalDays*100)));
+      const rightD=t.dateTo?daysBetween(t.dateFrom,t.dateTo):1;
+      const barW=Math.max(1,(rightD/totalDays*100));
+      const name=t.name.length>28?t.name.slice(0,26)+'…':t.name;
+      html+=`<div class="gantt-row"><div class="gantt-row-label">${name}<div class="grl-sub">${t.project||''}</div></div>
+      <div class="gantt-track"><div class="gantt-today-line" style="left:${todayPct.toFixed(1)}%"></div>
+      <div class="gantt-bar" style="left:${leftPct.toFixed(1)}%;width:${Math.min(barW,100-leftPct).toFixed(1)}%;background:${cfg.color};min-width:6px" title="${t.name}">${t.type==='Milestone'?'▲':''}</div></div></div>`;
+    });
+  }
+  container.innerHTML=html;
+}
+
+
+
+// ════════════════════════════════════════════════════════
+// BUSINESS CASE
+// ════════════════════════════════════════════════════════
+const BC_FIELDS=[
+  'bc-title','bc-background','bc-population','bc-geo-focus','bc-population-rationale','bc-epi-data',
+  'bc-sobc-def','bc-sobc-specific','bc-policy','bc-value-prop','bc-design-summary',
+  'bc-implementer-name','bc-implementer-type','bc-implementer-track','bc-implementer-role',
+  'bc-provinces','bc-districts','bc-site-rationale','bc-reach',
+  'bc-prim-outcome','bc-baseline','bc-targets','bc-cpo','bc-target-outcomes','bc-return','bc-saving','bc-sec-outcomes',
+  'bc-evaluator','bc-eval-method','bc-me-process','bc-eval-timeline',
+  'bc-lead-investor','bc-co-investors','bc-invest','bc-investor-profile','bc-return-terms',
+  'bc-approvals-list','bc-contracting','bc-start','bc-end','bc-procurement',
+  'bc-governance-framework','bc-gov-roles','bc-gov-partners','bc-service-partners',
+  'bc-risks-text','bc-risk-matrix',
+  'bc-counterpart-text','bc-counterpart-amt','bc-counterpart-source',
+  'bc-outcomes-fund','bc-budget-breakdown','bc-mtef',
+  'bc-fund-flow','bc-fund-timing','bc-financial-controls',
+  // General template fields
+  'gc-background','gc-alignment','gc-problem','gc-objectives','gc-evidence',
+  'gc-description','gc-scope-in','gc-scope-out','gc-options',
+  'gc-hard-savings','gc-soft-savings','gc-fin-narrative',
+  'gc-procurement-just','gc-requirements','gc-slas','gc-contract-mgmt',
+  'gc-sponsor','gc-pm','gc-start','gc-end','gc-team','gc-milestones','gc-risks','gc-sustainment'
+];
+function saveBC(){
+  const proj=v('bc-project-select'),data={status:''};
+  BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)data[id]=el.value;});
+  // Save number fields for general template
+  ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el)data[id]=el.value;});
+  data._template=bcTemplate;
+  // Save custom template sections (already tracked by bcSaveCustomField — just carry through)
+  const proj2=v('bc-project-select');
+  if(businessCases[proj2]&&businessCases[proj2]._customSections){
+    data._customSections=businessCases[proj2]._customSections;
+    data._customToc=businessCases[proj2]._customToc;
+  }
+  document.querySelectorAll('.bc-status-btn').forEach(b=>{if(b.classList.contains('active'))data.status=b.textContent;});
+  businessCases[proj]=data;persist();toast('Business case saved ✓');
+  renderBCSavedList();
+}
+function deleteBCData(projVal,projLabel,e){
+  e.stopPropagation();
+  if(!confirm('Delete all saved data for "'+projLabel+'"? This cannot be undone.'))return;
+  delete businessCases[projVal];persist();
+  if(v('bc-project-select')===projVal){
+    BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  }
+  renderBCSavedList();toast('Business case deleted');
+}
+function renderBCSavedList(){
+  const el=document.getElementById('bc-saved-quicklist');if(!el)return;
+  const PROJECTS=[
+    {value:'cataract',label:'Cataract SIB'},
+    {value:'agyw',label:'AGYW SRH SIB'},
+    {value:'rhd',label:'Paediatric RHD SIB'}
+  ];
+  const STATUS_COLOR={Draft:'var(--text3)',['In Review']:'var(--gold)',Final:'var(--teal)'};
+  // Only show projects that have actual saved data
+  const saved=PROJECTS.filter(p=>{
+    const d=businessCases[p.value];
+    return d&&BC_FIELDS.some(f=>d[f]&&d[f].trim());
+  });
+  if(!saved.length){
+    el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:8px 4px;font-style:italic">No saved cases yet — fill in a form and hit Save.</div>';
+    return;
+  }
+  el.innerHTML=saved.map(p=>{
+    const d=businessCases[p.value];
+    const status=d&&d.status?d.status:'';
+    const tpl=d&&d._template?d._template.toUpperCase():'';
+    const title=d&&d['bc-title']&&d['bc-title'].trim()?d['bc-title'].trim():'';
+    const isCur=v('bc-project-select')===p.value;
+    return `<div style="position:relative;padding:8px 30px 8px 9px;border-radius:5px;cursor:pointer;transition:background .12s;background:${isCur?'var(--teal-lt)':'var(--surface)'};border:1px solid ${isCur?'var(--teal)':'var(--border)'};margin-bottom:3px" onclick="document.getElementById('bc-project-select').value='${p.value}';loadBC('${p.value}');renderBCSavedList();">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
+        <svg width="11" height="11" fill="none" stroke="var(--teal)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span style="font-size:11px;font-weight:600;color:${isCur?'var(--teal)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${p.label}</span>
+      </div>
+      ${title?`<div style="font-size:9px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:16px;margin-bottom:3px">${title}</div>`:''}
+      <div style="display:flex;gap:4px;padding-left:16px;flex-wrap:wrap">
+        ${status?`<span style="font-size:9px;font-weight:700;color:${STATUS_COLOR[status]||'var(--text3)'};background:var(--surface2);padding:1px 6px;border-radius:3px">${status}</span>`:''}
+        ${tpl?`<span style="font-size:9px;color:var(--text3);background:var(--surface2);padding:1px 6px;border-radius:3px">${tpl}</span>`:''}
+      </div>
+      <button title="Delete this business case" onclick="deleteBCData('${p.value}','${p.label}',event)" style="position:absolute;top:7px;right:7px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;line-height:1;padding:2px 5px;border-radius:3px;transition:all .12s" onmouseover="this.style.background='var(--red-lt)';this.style.color='var(--red)'" onmouseout="this.style.background='none';this.style.color='var(--text3)'">✕</button>
+    </div>`;
+  }).join('');
+}
+function loadBC(proj){
+  const data=businessCases[proj];if(!data)return;
+  BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el&&data[id]!==undefined)el.value=data[id];});
+  ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el&&data[id]!==undefined)el.value=data[id];});
+  // Restore template view
+  if(data._template&&data._template!==bcTemplate){
+    const btn=document.getElementById('bc-tpl-'+data._template);
+    switchBCTemplate(data._template,btn);
+  } else if(data._template){
+    switchBCTemplate(data._template,document.getElementById('bc-tpl-'+data._template));
+  }
+  gcFinCalc();
+  // Restore custom sections if present
+  if(data._customSections&&data._customSections.length){
+    const inp=document.getElementById('bc-toc-input');
+    if(inp&&data._customToc)inp.value=data._customToc;
+    // Reload field values into sections
+    data._customSections.forEach(s=>{
+      const el=document.getElementById(s.id+'_val');
+      if(el)el.value=s.value||'';
+    });
+  }
+  document.querySelectorAll('.bc-status-btn').forEach(b=>b.classList.toggle('active',b.textContent===data.status));
+  bcFinCalc();
+}
+function setBCStatus(s,btn){document.querySelectorAll('.bc-status-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function scrollToBC(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});}
+function bcFinCalc(){
+  const cpo=parseFloat(v('bc-cpo'))||0,outcomes=parseFloat(v('bc-target-outcomes'))||0,saving=parseFloat(v('bc-saving'))||0;
+  const el=document.getElementById('bc-fin-preview'),pt=document.getElementById('bc-fin-preview-text');
+  if(!el||!pt)return;
+  if(!cpo||!outcomes){el.style.display='none';return;}
+  const invest=cpo*outcomes,totalSav=saving*outcomes,roi=invest>0?((totalSav-invest)/invest*100):0;
+  el.style.display='block';
+  pt.textContent=`Investment: R${invest.toLocaleString()} · Gov Saving: R${totalSav.toLocaleString()} · ROI: ${roi.toFixed(0)}% · Outcomes: ${outcomes.toLocaleString()}`;
+}
+
+function gcFinCalc(){
+  const capex=parseFloat(v('gc-capex'))||0;
+  const opex=parseFloat(v('gc-opex'))||0;
+  const years=parseFloat(v('gc-years'))||3;
+  const savings=parseFloat(v('gc-savings'))||0;
+  const el=document.getElementById('gc-fin-preview'),pt=document.getElementById('gc-fin-preview-text');
+  if(!el||!pt)return;
+  if(!capex&&!opex&&!savings){el.style.display='none';return;}
+  const totalCost=capex+(opex*years);
+  const totalSavings=savings*years;
+  const netBenefit=totalSavings-totalCost;
+  const roi=totalCost>0?((netBenefit/totalCost)*100):0;
+  const payback=savings>0?((capex+opex)/savings):0;
+  el.style.display='block';
+  pt.textContent=`Total Cost (${years}yr): R${totalCost.toLocaleString()} | Total Savings: R${totalSavings.toLocaleString()} | Net Benefit: R${netBenefit.toLocaleString()} | ROI: ${roi.toFixed(0)}% | Payback: ${payback.toFixed(1)} yrs`;
+}
+
+let bcTemplate='sobc';
+function switchBCTemplate(tpl,btn){
+  bcTemplate=tpl;
+  document.querySelectorAll('[id^="bc-tpl-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const sobc=document.getElementById('bc-form-sobc');
+  const gen=document.getElementById('bc-form-general');
+  const cust=document.getElementById('bc-form-custom');
+  const tocSobc=document.getElementById('bc-toc-sobc');
+  const tocGen=document.getElementById('bc-toc-general');
+  const tocCust=document.getElementById('bc-toc-custom');
+  // Hide all
+  [sobc,gen,cust].forEach(el=>{if(el)el.style.display='none';});
+  [tocSobc,tocGen,tocCust].forEach(el=>{if(el)el.style.display='none';});
+  // Show selected
+  if(tpl==='sobc'){
+    if(sobc)sobc.style.display='';
+    if(tocSobc)tocSobc.style.display='flex';
+  } else if(tpl==='general'){
+    if(gen)gen.style.display='';
+    if(tocGen)tocGen.style.display='flex';
+  } else if(tpl==='custom'){
+    if(cust)cust.style.display='';
+    if(tocCust)tocCust.style.display='flex';
+    // Re-render custom form if sections already exist
+    const proj=v('bc-project-select');
+    const saved=businessCases[proj];
+    if(saved&&saved._customSections&&saved._customSections.length){
+      bcRenderCustomForm(saved._customSections);
+      const inp=document.getElementById('bc-toc-input');
+      if(inp&&saved._customToc)inp.value=saved._customToc;
+    }
+  }
+}
+// ════════════════════════════════════════════════════════
+// CUSTOM TOC TEMPLATE
+// ════════════════════════════════════════════════════════
+
+function bcLoadToCFile(input){
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const inp=document.getElementById('bc-toc-input');
+    if(inp)inp.value=e.target.result;
+    toast('File loaded — click Generate Form to build your template');
+  };
+  reader.readAsText(file);
+}
+
+function bcParseToC(raw){
+  const lines=raw.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>2;});
+  const sections=[];
+  lines.forEach(function(line){
+    var clean=line
+      .replace(/^[•\-\*\u2013\u2014\u25AA\u25BA]\s*/,'')
+      .replace(/^\d+(\.\d+)*[\.)\s]\s*/,'')
+      .replace(/^[A-Z]\.\s*/,'')
+      .trim();
+    if(!clean||clean.length<3)return;
+    clean=clean.replace(/[.\-_]{3,}\s*\d+\s*$/,'').trim();
+    clean=clean.replace(/\s+\d{1,3}$/,'').trim();
+    if(clean.length<3)return;
+    var isTop=!line.startsWith(' ')&&!line.startsWith('\t');
+    var isSub=line.startsWith(' ')||line.startsWith('\t')||/^\d+\.\d+/.test(line);
+    sections.push({label:clean, level:isSub?2:1, id:'cust_'+sections.length, value:''});
+  });
+  return sections;
+}
+function bcGenerateCustomForm(){
+  const raw=document.getElementById('bc-toc-input')?.value||'';
+  if(!raw.trim()){toast('Please paste or upload your ToC first.','err');return;}
+  const sections=bcParseToC(raw);
+  if(!sections.length){toast('Could not parse any sections. Check your ToC format.','err');return;}
+  bcRenderCustomForm(sections);
+  // Store parsed sections + raw toc on current project
+  const proj=v('bc-project-select');
+  if(!businessCases[proj])businessCases[proj]={status:'Draft'};
+  businessCases[proj]._customSections=sections;
+  businessCases[proj]._customToc=raw;
+  businessCases[proj]._template='custom';
+  toast(sections.length+' sections generated ✓');
+}
+
+function bcRenderCustomForm(sections){
+  const out=document.getElementById('bc-custom-form-output');
+  const tocLinks=document.getElementById('bc-toc-custom-links');
+  const saveRow=document.getElementById('bc-custom-save-row');
+  if(!out)return;
+  const statusEl=document.getElementById('bc-custom-status');
+  if(statusEl){statusEl.style.display='inline';statusEl.textContent=sections.length+' sections generated';}
+
+  // Colour cycle for sections
+  const colours=['var(--teal)','var(--gold)','var(--violet)','var(--blue)','var(--teal)','var(--gold)','var(--violet)'];
+
+  // Build TOC links
+  if(tocLinks){
+    tocLinks.innerHTML=sections.filter(s=>s.level===1).map(s=>
+      `<a class="bc-toc-link" onclick="scrollToBC('${s.id}')">${s.label}</a>`
+    ).join('')+sections.filter(s=>s.level===2).map(s=>
+      `<a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('${s.id}')">↳ ${s.label}</a>`
+    ).join('');
+    // Rebuild full TOC in order
+    tocLinks.innerHTML='';
+    let colIdx=0;
+    sections.forEach(s=>{
+      const a=document.createElement('a');
+      a.className='bc-toc-link'+(s.level===2?' bc-toc-sub':'');
+      a.textContent=(s.level===2?'↳ ':'')+s.label;
+      a.onclick=()=>scrollToBC(s.id);
+      tocLinks.appendChild(a);
+    });
+  }
+
+  // Build form sections
+  let colIdx=0;
+  out.innerHTML=sections.map((s,i)=>{
+    const isTop=s.level===1;
+    const colour=isTop?colours[colIdx++%colours.length]:'var(--border2)';
+    const sectionHtml=`
+      <div class="bc-section" id="${s.id}" style="border-left-color:${colour};margin-bottom:${isTop?'28px':'18px'}">
+        <h3 style="font-size:${isTop?'13px':'11px'};font-weight:${isTop?'700':'600'};color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+          ${s.label}
+          ${isTop?`<span style="font-size:9px;color:var(--text3);font-weight:400;margin-left:auto">Section ${i+1}</span>`:''}
+        </h3>
+        <div class="field">
+          <label style="font-size:9px;color:var(--text3)">Content</label>
+          <textarea
+            id="${s.id}_val"
+            class="rich-text"
+            rows="${isTop?6:4}"
+            placeholder="Complete this section: ${s.label}..."
+            oninput="bcSaveCustomField('${s.id}',this.value)"
+          >${s.value||''}</textarea>
+        </div>
+        ${isTop?`<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <span style="font-size:9px;font-weight:600;color:var(--text3);padding:3px 8px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">Key questions answered here</span>
+          <span style="font-size:9px;color:var(--text3);padding:3px 8px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">Evidence-based</span>
+        </div>`:''}
+      </div>`;
+    return sectionHtml;
+  }).join('');
+
+  if(saveRow)saveRow.style.display='flex';
+}
+
+function bcSaveCustomField(sectionId, value){
+  const proj=v('bc-project-select');
+  if(!businessCases[proj]||!businessCases[proj]._customSections)return;
+  const s=businessCases[proj]._customSections.find(x=>x.id===sectionId);
+  if(s)s.value=value;
+}
+
+function bcClearCustomForm(){
+  if(!confirm('Clear the generated form? The ToC input will remain.'))return;
+  const out=document.getElementById('bc-custom-form-output');
+  if(out)out.innerHTML='';
+  const tocLinks=document.getElementById('bc-toc-custom-links');
+  if(tocLinks)tocLinks.innerHTML='<div style="font-size:10px;color:var(--text3);padding:6px 8px;font-style:italic">Upload a ToC to generate sections</div>';
+  const saveRow=document.getElementById('bc-custom-save-row');
+  if(saveRow)saveRow.style.display='none';
+  const statusEl=document.getElementById('bc-custom-status');
+  if(statusEl)statusEl.style.display='none';
+  const proj=v('bc-project-select');
+  if(businessCases[proj]){delete businessCases[proj]._customSections;delete businessCases[proj]._customToc;}
+  toast('Custom form cleared');
+}
+
+function exportBC(){
+  const proj=v('bc-project-select'),data=businessCases[proj]||{};
+  const g=id=>data[id]||'';
+  let txt=`SOCIAL IMPACT BOND / SOCIAL OUTCOMES BASED CONTRACT\nBUSINESS CASE\n\n`;
+  txt+=`Project: ${g('bc-title')||proj.toUpperCase()}\n`;
+  txt+=`Status: ${data.status||'Draft'} | Generated: ${new Date().toLocaleDateString('en-ZA')}\n`;
+  txt+='═'.repeat(70)+'\n\n';
+  const sections=[
+    ['1. INTRODUCTION & BACKGROUND','bc-background'],
+    ['1a. FOCUS POPULATION','bc-population-rationale'],
+    ['   Target Population','bc-population'],['   Geographic Scope','bc-geo-focus'],
+    ['   Key Epidemiological Data','bc-epi-data'],
+    ['1b. WHAT IS A SOBC?','bc-sobc-def'],
+    ['   Programme-Specific Description','bc-sobc-specific'],
+    ['1c. IMPORTANCE FOR SOUTH AFRICA','bc-value-prop'],
+    ['   Policy Alignment','bc-policy'],
+    ['2. DESIGN & IMPLEMENTATION','bc-design-summary'],
+    ['2a. THE IMPLEMENTER','bc-implementer-track'],
+    ['   Implementing Organisation','bc-implementer-name'],
+    ['   Implementer Role','bc-implementer-role'],
+    ['2b. GEOGRAPHICAL FOCUS','bc-site-rationale'],
+    ['   Provinces','bc-provinces'],['   Districts','bc-districts'],['   Reach','bc-reach'],
+    ['2c. BASELINES, TARGETS & PAYMENT METRICS','bc-targets'],
+    ['   Primary Outcome Metric','bc-prim-outcome'],
+    ['   Baseline Data','bc-baseline'],
+    ['   Secondary Outcomes','bc-sec-outcomes'],
+    ['2d. MONITORING & EVALUATION','bc-me-process'],
+    ['   Independent Evaluator','bc-evaluator'],['   Methodology','bc-eval-method'],
+    ['   Evaluation Timeline','bc-eval-timeline'],
+    ['3. SOCIAL INVESTOR','bc-investor-profile'],
+    ['   Lead Investor','bc-lead-investor'],['   Co-investors','bc-co-investors'],
+    ['   Return Structure','bc-return-terms'],
+    ['4. APPROVALS & CONTRACTING','bc-approvals-list'],
+    ['   Contracting Structure','bc-contracting'],['   Procurement Route','bc-procurement'],
+    ['5. GOVERNANCE ARRANGEMENTS','bc-governance-framework'],
+    ['   Roles & Responsibilities','bc-gov-roles'],
+    ['5a. RISKS','bc-risks-text'],
+    ['   Risk Allocation Matrix','bc-risk-matrix'],
+    ['6a. COUNTERPART FUNDING','bc-counterpart-text'],
+    ['6b. OUTCOMES FUNDING (BUDGET)','bc-budget-breakdown'],
+    ['   MTEF Alignment','bc-mtef'],
+    ['6c. FLOW OF FUNDS','bc-fund-flow'],
+    ['   Fund Timing','bc-fund-timing'],
+    ['   Financial Controls','bc-financial-controls'],
+  ];
+  sections.forEach(([label,id])=>{const val=g(id);if(val)txt+=`${label}\n${'-'.repeat(50)}\n${val}\n\n`;});
+  const cpo=parseFloat(g('bc-cpo'))||0,out=parseFloat(g('bc-target-outcomes'))||0,ret=parseFloat(g('bc-return'))||0,sav=parseFloat(g('bc-saving'))||0;
+  if(cpo&&out){txt+=`FINANCIAL SUMMARY\n${'-'.repeat(50)}\nTotal investment required: R${(cpo*out).toLocaleString()}\nTarget outcomes: ${out.toLocaleString()}\nCost per verified outcome: R${cpo.toLocaleString()}\nInvestor return rate: ${ret}%\nGovernment saving per outcome: R${sav.toLocaleString()}\nTotal government saving: R${(sav*out).toLocaleString()}\n\n`;}
+  // Custom template export
+  if(bcTemplate==='custom'){
+    const proj=v('bc-project-select');
+    const saved=businessCases[proj]||{};
+    const cSections=saved._customSections||[];
+    txt=`BUSINESS CASE\n\n`;
+    txt+=`Project: ${v('bc-title')||proj.toUpperCase()}\nStatus: ${saved.status||'Draft'} | Generated: ${new Date().toLocaleDateString('en-ZA')}\n${'═'.repeat(70)}\n\n`;
+    cSections.forEach(s=>{
+      const val=s.value||'';
+      if(val.trim()){
+        txt+=`${s.label.toUpperCase()}\n${'─'.repeat(50)}\n${val}\n\n`;
+      }
+    });
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+    a.download=`BusinessCase_Custom_${proj}_${new Date().toISOString().slice(0,10)}.txt`;a.click();
+    return;
+  }
+
+  // General template export
+  if(bcTemplate==='general'){
+    txt=`BUSINESS CASE\n\nProject: ${g('bc-title')||proj.toUpperCase()}\nStatus: ${data.status||'Draft'} | Generated: ${new Date().toLocaleDateString('en-ZA')}\n${'═'.repeat(70)}\n\n`;
+    const gSections=[
+      ['1. STRATEGIC CASE',''],
+      ['   Background & Context','gc-background'],
+      ['   Strategic Alignment','gc-alignment'],
+      ['   Problem Statement','gc-problem'],
+      ['   Objectives (SMART)','gc-objectives'],
+      ['   Evidence of Need','gc-evidence'],
+      ['2. PROPOSED SOLUTION',''],
+      ['   Project Description','gc-description'],
+      ['   Scope — Included','gc-scope-in'],
+      ['   Scope — Excluded','gc-scope-out'],
+      ['   Options Considered','gc-options'],
+      ['3. FINANCIAL CASE',''],
+      ['   Hard Savings (Tangible)','gc-hard-savings'],
+      ['   Soft Benefits (Intangible)','gc-soft-savings'],
+      ['   Financial Narrative','gc-fin-narrative'],
+      ['4. COMMERCIAL CASE',''],
+      ['   Technical Requirements','gc-requirements'],
+      ['   SLAs & KPIs','gc-slas'],
+      ['   Contract Management','gc-contract-mgmt'],
+      ['5. PROJECT MANAGEMENT & GOVERNANCE',''],
+      ['   Project Team & Stakeholders','gc-team'],
+      ['   Milestones & Timeline','gc-milestones'],
+      ['   Risks & Mitigations','gc-risks'],
+      ['   Sustainment Plan','gc-sustainment'],
+    ];
+    gSections.forEach(([label,id])=>{
+      if(!id){txt+=`${label}\n${'─'.repeat(50)}\n`;return;}
+      const val=g(id);if(val)txt+=`${label}\n${val}\n\n`;
+    });
+    const capex=parseFloat(g('gc-capex'))||0,opex=parseFloat(g('gc-opex'))||0,yrs=parseFloat(g('gc-years'))||3,sav=parseFloat(g('gc-savings'))||0;
+    if(capex||sav){
+      const tot=capex+(opex*yrs),totSav=sav*yrs,net=totSav-tot,roi=tot>0?(net/tot*100):0,pb=sav>0?((capex+opex)/sav):0;
+      txt+=`FINANCIAL SUMMARY\n${'─'.repeat(50)}\nCapex: R${capex.toLocaleString()} | Annual Opex: R${opex.toLocaleString()}\nTotal cost (${yrs}yr): R${tot.toLocaleString()} | Total savings: R${totSav.toLocaleString()}\nNet benefit: R${net.toLocaleString()} | ROI: ${roi.toFixed(0)}% | Payback: ${pb.toFixed(1)} yrs\n`;
+    }
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download=`BusinessCase_${proj}_${new Date().toISOString().slice(0,10)}.txt`;a.click();
+}
+
+// ════════════════════════════════════════════════════════
+// RISK
+// ════════════════════════════════════════════════════════
+function riskLevel(r){if(r.likelihood==='High'&&r.impact==='High')return'high';if(r.likelihood==='Low'&&r.impact==='Low')return'low';return'medium';}
+function addRisk(){
+  const title=v('risk-title');if(!title){toast('Enter title.','err');return;}
+  risks.push({id:uid(),title,cat:v('risk-cat'),likelihood:v('risk-likelihood'),impact:v('risk-impact'),owner:v('risk-owner'),desc:v('risk-desc'),mitigation:v('risk-mitigation')});
+  persist();renderRisks();toast('Risk added');
+  ['risk-title','risk-desc','risk-mitigation','risk-owner'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function deleteRisk(id){if(!confirm('Delete?'))return;risks=risks.filter(r=>r.id!==id);persist();renderRisks();}
+function renderRisks(){
+  const sumEl=document.getElementById('risk-summary');
+  if(sumEl){const h=risks.filter(r=>riskLevel(r)==='high').length,m=risks.filter(r=>riskLevel(r)==='medium').length,l=risks.filter(r=>riskLevel(r)==='low').length;
+  sumEl.innerHTML=`<div class="g3"><div style="text-align:center;padding:12px;background:var(--red-lt);border-radius:var(--rs);border:1px solid rgba(239,68,68,.3)"><div style="font-size:26px;font-weight:800;color:var(--red)">${h}</div><div style="font-size:9px;color:var(--red);text-transform:uppercase;font-weight:700">High</div></div><div style="text-align:center;padding:12px;background:var(--gold-lt);border-radius:var(--rs);border:1px solid rgba(245,158,11,.3)"><div style="font-size:26px;font-weight:800;color:var(--gold)">${m}</div><div style="font-size:9px;color:var(--gold);text-transform:uppercase;font-weight:700">Medium</div></div><div style="text-align:center;padding:12px;background:var(--green-lt);border-radius:var(--rs);border:1px solid rgba(34,197,94,.3)"><div style="font-size:26px;font-weight:800;color:var(--green)">${l}</div><div style="font-size:9px;color:var(--green);text-transform:uppercase;font-weight:700">Low</div></div></div>`;}
+  const listEl=document.getElementById('risk-list');if(!listEl)return;
+  if(!risks.length){listEl.innerHTML='<div class="empty-state">No risks registered.</div>';return;}
+  listEl.innerHTML=[...risks].sort((a,b)=>({'high':0,'medium':1,'low':2}[riskLevel(a)]-{'high':0,'medium':1,'low':2}[riskLevel(b)])).map(r=>{
+    const level=riskLevel(r),lbadge=level==='high'?'b-red':level==='medium'?'b-gold':'b-green';
+    return `<div class="risk-item ${level}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="flex:1;font-size:12px;font-weight:600">${r.title}</div><span class="badge ${lbadge}">${level}</span><span class="badge b-gray">${r.cat}</span><button class="btn btn-danger btn-xs" onclick="deleteRisk('${r.id}')">✕</button></div>${r.desc?`<div style="font-size:11px;color:var(--text2)">${r.desc}</div>`:''}<div style="display:flex;gap:6px;margin-top:5px"><span style="font-size:9px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--text3)">L: ${r.likelihood}</span><span style="font-size:9px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--text3)">I: ${r.impact}</span>${r.owner?`<span style="font-size:9px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--text3)">${r.owner}</span>`:''}</div>${r.mitigation?`<div style="margin-top:7px;font-size:10px;color:var(--text2);border-top:1px solid var(--border);padding-top:5px"><strong>Mitigation:</strong> ${r.mitigation}</div>`:''}</div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// STAKEHOLDERS
+// ════════════════════════════════════════════════════════
+function addStakeholder(){
+  const name=v('sh-name');if(!name){toast('Enter a name.','err');return;}
+  stakeholders.push({id:uid(),name,org:v('sh-org'),role:v('sh-role'),influence:v('sh-influence'),email:v('sh-email'),phone:v('sh-phone'),notes:v('sh-notes')});
+  persist();renderStakeholders();toast('Stakeholder added');
+  ['sh-name','sh-org','sh-email','sh-phone','sh-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function deleteStakeholder(id){if(!confirm('Delete?'))return;stakeholders=stakeholders.filter(s=>s.id!==id);persist();renderStakeholders();}
+function renderStakeholders(){
+  const sumEl=document.getElementById('sh-summary');
+  if(sumEl){const byRole={};stakeholders.forEach(s=>{byRole[s.role]=(byRole[s.role]||0)+1;});sumEl.innerHTML=Object.entries(byRole).map(([r,c])=>`<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:11px"><span>${r}</span><strong style="color:var(--teal)">${c}</strong></div>`).join('')||'<div class="empty-state">No stakeholders yet.</div>';}
+  const listEl=document.getElementById('stakeholder-list');if(!listEl)return;
+  if(!stakeholders.length){listEl.innerHTML='';return;}
+  const byRole={};stakeholders.forEach(s=>{if(!byRole[s.role])byRole[s.role]=[];byRole[s.role].push(s);});
+  listEl.innerHTML=Object.entries(byRole).map(([role,list])=>`<div class="card"><div class="card-head">${role}</div>${list.map((s,i)=>`<div class="sh-card"><div class="sh-avatar" style="background:${SH_COLORS[i%SH_COLORS.length]}">${s.name.charAt(0).toUpperCase()}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${s.name}</div><div style="font-size:10px;color:var(--text3)">${s.org||''}</div>${s.email?`<div style="font-size:10px;margin-top:2px"><a href="mailto:${s.email}" style="color:var(--teal)">${s.email}</a></div>`:''}</div><div><span class="badge ${s.influence==='High'?'b-red':s.influence==='Medium'?'b-gold':'b-green'}">${s.influence}</span></div><button class="btn btn-danger btn-xs" onclick="deleteStakeholder('${s.id}')">✕</button></div>`).join('')}</div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// PAYROLL
+// ════════════════════════════════════════════════════════
+function renderPayroll(){
+  const now=new Date();let nextClose=null,nextPay=null,nextM=null;
+  const tbody=document.getElementById('payroll-body');if(!tbody)return;
+  tbody.innerHTML=PAYROLL.map((p,i)=>{
+    const cd=new Date(p.close),pd=new Date(p.pay);
+    const isPast=pd<now,isNext=!nextClose&&cd>=now;
+    if(isNext){nextClose=p.close;nextPay=p.pay;nextM=p.m;}
+    const prevClose=i>0?new Date(PAYROLL[i-1].close):CONTRACT_START;
+    const pHrs=tsEntries.filter(e=>{const d=new Date(e.df);return d>=prevClose&&d<=cd;}).reduce((s,e)=>s+e.hrs,0);
+    const claim=rate&&pHrs>0?'R '+Math.round(pHrs*rate).toLocaleString():'—';
+    const badge=isPast?'<span class="badge b-gray">Closed</span>':isNext?'<span class="badge b-gold">Next ↑</span>':'<span class="badge b-blue">Upcoming</span>';
+    return `<tr><td><strong>${p.m}</strong></td><td style="font-family:'JetBrains Mono',monospace;font-size:11px">${p.close}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px">${p.pay}</td><td>${badge}</td><td style="font-family:'JetBrains Mono',monospace">${pHrs.toFixed(2)}</td><td style="font-family:'JetBrains Mono',monospace">${claim}</td></tr>`;
+  }).join('');
+  if(nextClose){const d=Math.ceil((new Date(nextClose)-now)/86400000);set('nc-title',`Next payroll closing: ${nextM} — ${nextClose} (in ${d} day${d!==1?'s':''})`);set('nc-detail',`Pay date: ${nextPay} · Submit your timesheet before ${nextClose}.`);}
+}
+
+// ════════════════════════════════════════════════════════
+// STATS & AI
+// ════════════════════════════════════════════════════════
+function renderLiveStats(){
+  const logged=totalHrs(),remain=TOTAL-logged;
+  const now=new Date(),days=Math.max(1,Math.floor((now-CONTRACT_START)/86400000));
+  const done=delivs.filter(d=>d.done).length;
+  const wkly=days>6?(logged/(days/7)).toFixed(1)+'h/wk':'—';
+  const nextPr=PAYROLL.find(p=>new Date(p.close)>=now);
+  const dToClose=nextPr?Math.ceil((new Date(nextPr.close)-now)/86400000):'—';
+  document.getElementById('live-stats').innerHTML=[
+    {c:'sc-t',l:'Completion',v:(logged/TOTAL*100).toFixed(1)+'%',s:logged.toFixed(1)+' of 520 hrs'},
+    {c:'sc-g',l:'Weekly Avg',v:wkly,s:'based on '+days+' days'},
+    {c:'sc-v',l:'Weeks Left',v:Math.ceil(remain/(8*5)),s:remain.toFixed(1)+' hrs remaining'},
+    {c:'sc-b',l:'Deliverables',v:done+'/'+delivs.length,s:(delivs.length-done)+' outstanding'},
+    {c:'sc-t',l:'Next Payroll',v:dToClose+'d',s:nextPr?nextPr.close:'—'},
+    rate?{c:'sc-g',l:'Amount Earned',v:'R'+Math.round(totalAmt()).toLocaleString(),s:'of R'+Math.round(rate*TOTAL).toLocaleString()+' total'}:null
+  ].filter(Boolean).map(s=>`<div class="stat-card ${s.c}"><div class="sl">${s.l}</div><div class="sv">${s.v}</div><div class="ss">${s.s}</div></div>`).join('');
+}
+function buildCtx(){
+  const logged=totalHrs(),remain=TOTAL-logged,now=new Date(),days=Math.max(1,Math.floor((now-CONTRACT_START)/86400000));
+  const totKra={};Object.keys(KRA_CFG).forEach(k=>totKra[k]=0);tsEntries.forEach(e=>{if(totKra[e.kra]!==undefined)totKra[e.kra]+=e.hrs;});
+  const done=delivs.filter(d=>d.done).length;
+  const nextPr=PAYROLL.find(p=>new Date(p.close)>=now);
+  return `CONTRACT: 15 Jun 2026, 520 hrs. Logged: ${logged.toFixed(1)} (${(logged/TOTAL*100).toFixed(1)}%). Remaining: ${remain.toFixed(1)}. Days elapsed: ${days}. Rate: ${rate?'R'+rate:'not set'}. Earned: ${rate?'R'+fmt2(totalAmt()):'N/A'}.
+KRA: ${Object.entries(KRA_CFG).map(([k,c])=>`${k}: ${(totKra[k]||0).toFixed(1)}/${(c.target/100*TOTAL).toFixed(0)}h (target ${c.target}%)`).join('; ')}.
+Deliverables: ${done}/${delivs.length} done. Tasks: ${tasks.length} total. Risks: ${risks.length} (${risks.filter(r=>riskLevel(r)==='high').length} high). Next payroll: ${nextPr?nextPr.close+' ('+Math.ceil((new Date(nextPr.close)-now)/86400000)+'d)':'N/A'}.`;
+}
+function saveGroqKey(val){groqKey=val;persist();}
+async function callGroq(msgs,sys){
+  if(!groqKey)return'Enter your Groq API key above. Free at console.groq.com/keys';
+  try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1400,messages:[{role:'system',content:sys},...msgs]})});const data=await res.json();if(data.error)return'Groq error: '+data.error.message;return data.choices?.[0]?.message?.content||'No response.';}catch(e){return'Network error.';}
+}
+async function statsPrompt(p){
+  showView('stats');document.getElementById('ai-prompt-input').value=p;
+  const sys='You are a project analytics agent for a SIB project lead in South Africa. Use project data. Be specific, concise and actionable.';
+  document.getElementById('ai-loading').style.display='flex';document.getElementById('ai-output').style.display='none';
+  const reply=await callGroq([{role:'user',content:p+'\n\nData:\n'+buildCtx()}],sys);
+  document.getElementById('ai-loading').style.display='none';
+  const out=document.getElementById('ai-output');out.style.display='block';out.textContent=reply;
+  document.getElementById('ai-actions').style.display='flex';
+}
+async function aiPrompt(p){showView('stats');document.getElementById('ai-prompt-input').value=p;await statsPrompt(p);}
+async function runAI(){const p=document.getElementById('ai-prompt-input').value.trim();if(!p)return;await statsPrompt(p);}
+function copyAI(){navigator.clipboard.writeText(document.getElementById('ai-output').textContent).then(()=>toast('Copied!'));}
+
+// ════════════════════════════════════════════════════════
+// CLOCK
+// ════════════════════════════════════════════════════════
+function updateClock(){const n=new Date();set('clock',n.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' · '+n.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}));}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+loadState();
+// Theme
+(function(){const t=localStorage.getItem('sib3_theme')||'dark';document.documentElement.setAttribute('data-theme',t);const btn=document.getElementById('theme-btn');if(btn)btn.textContent=t==='dark'?'🌙 Dark':'☀ Light';})();
+// Rate
+if(rate){const el=document.getElementById('rate-global');if(el)el.value=rate;}
+// Groq key
+if(groqKey){const el=document.getElementById('groq-key');if(el)el.value=groqKey;}
+// Today dates
+const todayStr=new Date().toISOString().split('T')[0];
+['df','dt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr;});
+// Calendar
+calYear=new Date().getFullYear();calMonth=new Date().getMonth();
+// Calendar header filter group removed (filters live in top tab bar)
+// Render all
+updateMetrics();renderCalendar();renderTS();renderKRA();renderPayroll();renderRisks();renderStakeholders();renderLiveStats();renderAllTasksTable();renderBCSavedList();
+updateClock();setInterval(updateClock,30000);
+// Seed sample tasks if empty
+if(tasks.length===0){
+  const t=todayStr;
+  function addD(days){const d=new Date(t);d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
+  tasks=[
+    {id:uid(),name:'Business Case — TB Vaccine — Outline',kra:'Research',type:'Milestone',project:'TBV-Finance',effort:3,dateFrom:t,dateTo:t,due:addD(3),status:'In progress',reverse:'Yes',notes:'Draft milestone (fresh setup).',allDay:true},
+    {id:uid(),name:'Test Grant Proposal — Internal Review',kra:'Research',type:'Milestone',project:'Grant X',effort:2,dateFrom:addD(6),dateTo:addD(6),due:addD(6),status:'Not started',reverse:'Yes',notes:'Reverse-planned milestone. Parent deliverable: Test Grant Proposal.',allDay:true},
+    {id:uid(),name:'TB Vaccine Finance Model',kra:'Project Management',type:'Task',project:'TBV-Finance',effort:2,dateFrom:t,dateTo:t,due:addD(7),status:'In progress',reverse:'No',notes:'',allDay:true},
+    {id:uid(),name:'Business Case — Admin Close-out',kra:'Research Admin',type:'Milestone',project:'TBV-Finance',effort:1,dateFrom:addD(14),dateTo:addD(14),due:addD(14),status:'Not started',reverse:'No',notes:'',allDay:true},
+    {id:uid(),name:'Business Case — Internal Review',kra:'Research',type:'Milestone',project:'Grant X',effort:2,dateFrom:addD(10),dateTo:addD(10),due:addD(10),status:'Not started',reverse:'No',notes:'',allDay:true},
+  ];
+  persist();renderCalendar();renderAllTasksTable();
+}
+</script>
+</body>
+</html>
