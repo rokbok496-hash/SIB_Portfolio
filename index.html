@@ -501,7 +501,28 @@ tbody tr:hover td{background:var(--teal-lt)}
 .totals-bar{display:flex;gap:18px;font-size:11px;flex-wrap:wrap;padding:11px 0 0;border-top:1px solid var(--border);margin-top:8px}
 .totals-bar strong{color:var(--teal);font-family:'JetBrains Mono',monospace}
 
-input[type=number]{-moz-appearance:textfield}
+/* Calendar view toggle */
+.cal-view-toggle{padding:4px 11px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);cursor:pointer;font-size:10px;font-weight:600;color:var(--text2);font-family:'Inter',sans-serif;transition:all .12s}
+.cal-view-toggle:hover{border-color:var(--teal);color:var(--teal)}
+.cal-view-toggle.active{background:var(--teal);border-color:var(--teal);color:#fff}
+
+/* Weekend cells greyed */
+.cal-cell.weekend{background:rgba(0,0,0,.12);opacity:.7}
+[data-theme="light"] .cal-cell.weekend{background:rgba(0,0,0,.05);opacity:.8}
+
+/* Week view */
+.week-grid{display:grid;grid-template-columns:52px repeat(7,1fr);min-width:700px}
+.week-col-head{text-align:center;padding:7px 4px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);border-right:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:10}
+.week-col-head.today-col{color:var(--teal)}
+.week-col-head.weekend-col{color:var(--text3);opacity:.5;background:var(--bg2)}
+.week-time-label{font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;text-align:right;padding:0 6px 0 2px;height:48px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;padding-top:3px}
+.week-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);height:48px;position:relative;cursor:pointer;transition:background .1s}
+.week-cell:hover{background:var(--surface2)}
+.week-cell.weekend-cell{background:var(--bg3);opacity:.7}
+.week-task-chip{position:absolute;left:2px;right:2px;border-radius:3px;padding:2px 4px;font-size:9px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;z-index:5}
+.week-all-day-row{display:grid;grid-template-columns:52px repeat(7,1fr);min-width:700px;border-bottom:2px solid var(--border)}
+.week-all-day-cell{border-right:1px solid var(--border);padding:3px 4px;min-height:28px}
+.week-all-day-label{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;border-right:1px solid var(--border);font-family:'JetBrains Mono',monospace}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </style>
 </head>
@@ -627,23 +648,31 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <!-- Cal header -->
           <div class="cal-header">
             <div class="cal-month-nav">
-              <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+              <button class="cal-nav-btn" onclick="calNavPrev()">‹</button>
               <div class="cal-month-label" id="cal-month-label">June 2026</div>
-              <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+              <button class="cal-nav-btn" onclick="calNavNext()">›</button>
               <button class="cal-today-btn" onclick="goToday()">Today</button>
+            </div>
+            <div style="display:flex;gap:3px;margin-left:10px">
+              <button class="cal-view-toggle active" id="cvt-month" onclick="setCalView('month')">Month</button>
+              <button class="cal-view-toggle" id="cvt-week" onclick="setCalView('week')">Week</button>
             </div>
             <button class="cal-add-btn" onclick="openAddTask()">
               <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               New Task
             </button>
           </div>
-          <!-- Calendar grid -->
-          <div class="cal-grid-wrap">
+          <!-- Calendar grid (month view) -->
+          <div class="cal-grid-wrap" id="cal-month-wrap">
             <div class="cal-dow-row">
-              <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
-              <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+              <div class="cal-dow" style="color:var(--text3);opacity:.45">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
+              <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow" style="color:var(--text3);opacity:.45">Sat</div>
             </div>
             <div class="cal-grid" id="cal-grid"></div>
+          </div>
+          <!-- Week view (24-hour timeline) -->
+          <div class="cal-grid-wrap" id="cal-week-wrap" style="display:none;overflow:auto">
+            <div id="cal-week-inner"></div>
           </div>
         </div>
         <!-- Detail Panel (like Notion right panel) -->
@@ -766,8 +795,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       </div>
       <div class="card">
         <div class="toolbar"><div class="card-head gold" style="margin-bottom:0">Project Deliverables <span id="delivs-badge" style="font-size:9px;background:var(--gold-lt);color:var(--gold);padding:2px 7px;border-radius:10px;font-weight:700;margin-left:5px">0</span></div>
-          <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="resetDelivs()">↩ Reset</button><button class="btn btn-gold btn-sm" onclick="showAddDeliv()">+ Add</button></div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm" onclick="refreshDelivs()" title="Re-sort deliverables by KRA category">↻ Refresh</button>
+            <button class="btn btn-sm" onclick="resetDelivs()" title="Reset to default deliverables">↩ Reset</button>
+            <button class="btn btn-gold btn-sm" onclick="showAddDeliv()">+ Add</button>
+          </div>
         </div>
+        <!-- Work distribution bar -->
+        <div id="deliv-dist-bar" style="margin-bottom:12px"></div>
         <div id="deliverables-list"></div>
         <div id="add-deliv-panel" style="display:none;margin-top:10px">
           <div style="display:flex;gap:7px;align-items:center;padding:9px 11px;border:1px dashed var(--border2);border-radius:var(--rs);flex-wrap:wrap">
@@ -801,9 +836,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <!-- ── BC LEFT SIDEBAR: Saved cases + ToC navigation only ── -->
       <div style="width:240px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);height:100%;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:0">
 
-        <!-- Saved Business Cases list -->
-        <div style="margin-bottom:10px">
-          <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;padding:0 4px">Saved Business Cases</div>
+        <!-- Project Manager -->
+        <div style="margin-bottom:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:8px">
+            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">Projects</div>
+            <button onclick="openNewProjectModal()" style="background:var(--teal);border:none;border-radius:4px;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;font-family:'Inter',sans-serif">+ New</button>
+          </div>
           <div id="bc-saved-quicklist" style="display:flex;flex-direction:column;gap:2px"></div>
         </div>
 
@@ -812,7 +850,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <!-- ToC Navigation -->
         <div style="flex:1">
           <!-- SOBC ToC -->
-          <div id="bc-toc-sobc" style="display:flex;flex-direction:column;gap:1px">
+          <div id="bc-toc-sobc" style="display:none;flex-direction:column;gap:1px">
             <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 4px">Table of Contents</div>
             <a class="bc-toc-link" onclick="scrollToBC('bc-intro')">1. Introduction &amp; Background</a>
             <a class="bc-toc-link bc-toc-sub" onclick="scrollToBC('bc-agyw')">↳ Focus Population</a>
@@ -856,7 +894,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div>
 
           <!-- Custom ToC (dynamic) -->
-          <div id="bc-toc-custom" style="display:none;flex-direction:column;gap:1px">
+          <div id="bc-toc-custom" style="display:flex;flex-direction:column;gap:1px">
             <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 4px">Generated Sections</div>
             <div id="bc-toc-custom-links" style="display:flex;flex-direction:column;gap:1px">
               <div style="font-size:10px;color:var(--text3);padding:6px 8px;font-style:italic">Upload a ToC to generate sections</div>
@@ -870,18 +908,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
         <!-- Project controls bar (sticky at top of right panel) -->
         <div style="flex-shrink:0;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <!-- Template switcher -->
+          <!-- Template switcher — Custom ToC is primary -->
           <div style="display:flex;gap:4px">
-            <button class="bc-status-btn active" id="bc-tpl-sobc" onclick="switchBCTemplate('sobc',this)" style="font-size:10px;padding:5px 10px">SOBC</button>
-            <button class="bc-status-btn" id="bc-tpl-custom" onclick="switchBCTemplate('custom',this)" style="font-size:10px;padding:5px 10px;background:var(--violet-lt);border-color:var(--violet);color:var(--violet)">✦ Custom ToC</button>
+            <button class="bc-status-btn active" id="bc-tpl-custom" onclick="switchBCTemplate('custom',this)" style="font-size:10px;padding:5px 10px;background:var(--violet-lt);border-color:var(--violet);color:var(--violet)">✦ Custom ToC</button>
+            <button class="bc-status-btn" id="bc-tpl-sobc" onclick="switchBCTemplate('sobc',this)" style="font-size:10px;padding:5px 10px">SOBC</button>
+            <button class="bc-status-btn" id="bc-tpl-general" onclick="switchBCTemplate('general',this)" style="font-size:10px;padding:5px 10px">General</button>
           </div>
           <div style="width:1px;height:20px;background:var(--border)"></div>
-          <!-- Project select -->
-          <select id="bc-project-select" onchange="loadBC(this.value);renderBCSavedList();" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:12px;min-width:160px">
-            <option value="cataract">Cataract SIB</option>
-            <option value="agyw">AGYW SRH SIB</option>
-            <option value="rhd">Paediatric RHD SIB</option>
-          </select>
+          <!-- Project select (hidden — driven by project manager sidebar) -->
+          <input type="hidden" id="bc-project-select" value="">
+          <span id="bc-project-label" style="font-size:11px;font-weight:600;color:var(--teal);padding:4px 10px;background:var(--teal-lt);border:1px solid var(--teal);border-radius:20px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           <!-- Status pills -->
           <div style="display:flex;gap:4px">
             <button class="bc-status-btn active" onclick="setBCStatus('Draft',this)" style="font-size:10px;padding:5px 10px">Draft</button>
@@ -898,7 +934,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div style="flex:1;overflow-y:auto;padding:16px">
 
           <!-- ══ SOBC TEMPLATE ══ -->
-          <div id="bc-form-sobc">
+          <div id="bc-form-sobc" style="display:none">
 
           <!-- ══ SECTION 1: INTRODUCTION ══ -->
           <div class="bc-section" id="bc-intro">
@@ -1140,7 +1176,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div><!-- /bc-form-general -->
 
           <!-- ══ CUSTOM TOC TEMPLATE ══ -->
-          <div id="bc-form-custom" style="display:none">
+          <div id="bc-form-custom">
 
             <!-- Upload / paste zone -->
             <div style="background:var(--violet-lt);border:2px dashed var(--violet);border-radius:var(--r);padding:20px 22px;margin-bottom:16px">
@@ -1150,11 +1186,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
               </div>
               <p style="font-size:11px;color:var(--text2);margin-bottom:14px">Paste your ToC, section headings or outline below. The system will parse the structure and generate a custom fillable business case form — one text area per section. You can also upload a <strong>.txt</strong> file.</p>
               <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
-                <input type="file" id="bc-toc-file" accept=".txt,.md" style="display:none" onchange="bcLoadToCFile(this)">
-                <button class="btn btn-sm" style="border-color:var(--violet);color:var(--violet)" onclick="document.getElementById('bc-toc-file').click()">
+                <label for="bc-toc-file" class="btn btn-sm" style="border-color:var(--violet);color:var(--violet);cursor:pointer;display:inline-flex;align-items:center;gap:5px">
                   <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Upload .txt file
-                </button>
+                </label>
+                <input type="file" id="bc-toc-file" accept=".txt,.md,.csv" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="bcLoadToCFile(this)">
                 <span style="font-size:10px;color:var(--text3)">or paste directly below</span>
               </div>
               <textarea id="bc-toc-input" rows="10" placeholder="Paste your table of contents or outline here. For example:
@@ -1300,11 +1336,26 @@ The system will generate a fillable section for each heading." style="width:100%
     <div class="field"><label>Task Name</label><input type="text" id="m-name" placeholder="e.g. Business Case – TB Vaccine – Outline"></div>
     <div class="fg2">
       <div class="field"><label>KRA Category</label><select id="m-kra"><option value="Research">Research (50%)</option><option value="Project Management">Project Management (40%)</option><option value="Research Admin">Research Admin (5%)</option><option value="Dissemination">Presentation & Dissemination (5%)</option></select></div>
-      <div class="field"><label>Task Type</label><select id="m-type"><option value="Task">Task</option><option value="Milestone">Milestone</option><option value="Research">Research</option><option value="Admin">Admin</option></select></div>
+      <div class="field"><label>Task Type</label><select id="m-type"><option value="Task">Task</option><option value="Milestone">Milestone</option><option value="Research">Research</option><option value="Admin">Admin</option><option value="Project Admin">Project Admin</option></select></div>
     </div>
     <div class="fg2">
       <div class="field"><label>Project Name</label><input type="text" id="m-project" placeholder="e.g. TBV-Finance, Grant X, Cataract SIB"></div>
       <div class="field"><label>Effort (hours)</label><input type="number" id="m-effort" value="2" min="0.5" step="0.5"></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Recurring</label>
+        <select id="m-recurring">
+          <option value="">Not recurring</option>
+          <option value="Mon">Every Monday</option>
+          <option value="Tue">Every Tuesday</option>
+          <option value="Wed">Every Wednesday</option>
+          <option value="Thu">Every Thursday</option>
+          <option value="Fri">Every Friday</option>
+          <option value="daily">Daily (Mon–Fri)</option>
+          <option value="weekly">Weekly (same day)</option>
+        </select>
+      </div>
+      <div class="field" id="m-recurring-end-wrap" style="display:none"><label>Repeat Until</label><input type="date" id="m-recurring-end"></div>
     </div>
     <div class="fg2">
       <div class="field"><label>Plan Date (From)</label><input type="date" id="m-date-from"></div>
@@ -1319,6 +1370,57 @@ The system will generate a fillable section for each heading." style="width:100%
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
       <button class="btn" onclick="closeModal()">Cancel</button>
       <button class="btn btn-teal" onclick="saveNewTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW / EDIT PROJECT MODAL -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal" style="max-width:460px">
+    <button class="modal-close" onclick="closeProjectModal()">✕</button>
+    <h3 id="proj-modal-title">➕ New Project</h3>
+    <input type="hidden" id="proj-edit-id">
+    <div class="field">
+      <label>Project Name <span style="color:var(--red)">*</span></label>
+      <input type="text" id="proj-name" placeholder="e.g. Cataract Surgery SIB — Gauteng" oninput="previewProjectId()">
+    </div>
+    <div class="field">
+      <label>Auto-generated Project ID</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="proj-id-preview" readonly style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--teal);background:var(--teal-lt);border-color:var(--teal);letter-spacing:.04em;flex:1" placeholder="Will generate from name…">
+        <button class="btn btn-sm" onclick="regenerateProjectId()" title="Regenerate ID" style="flex-shrink:0">↺ Regen</button>
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-top:4px">Generated from project name initials + year. You can override by typing in this field after clicking Regen.</div>
+    </div>
+    <div class="field">
+      <label>Short Description</label>
+      <textarea id="proj-desc" rows="2" placeholder="One-line description of this project…"></textarea>
+    </div>
+    <div class="fg2">
+      <div class="field">
+        <label>Project Type</label>
+        <select id="proj-type">
+          <option value="SIB">Social Impact Bond (SIB)</option>
+          <option value="SOBC">Social Outcomes Based Contract (SOBC)</option>
+          <option value="Grant">Grant</option>
+          <option value="Research">Research</option>
+          <option value="Proposal">Proposal</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="proj-status">
+          <option value="Active">Active</option>
+          <option value="Pipeline">Pipeline</option>
+          <option value="On Hold">On Hold</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button class="btn" onclick="closeProjectModal()">Cancel</button>
+      <button class="btn btn-teal" onclick="saveProject()">Save Project</button>
     </div>
   </div>
 </div>
@@ -1371,7 +1473,7 @@ const DEFAULT_DELIVS=[
 // ════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════
-let tasks=[], tsEntries=[], delivs=[], risks=[], stakeholders=[], businessCases={};
+let tasks=[], tsEntries=[], delivs=[], risks=[], stakeholders=[], businessCases={}, bcProjects=[];
 let rate=0, groqKey='', ganttMonths=6, calYear, calMonth, selectedTaskId=null, calFilter='all', editingTsId=null;
 
 function loadState(){
@@ -1381,6 +1483,7 @@ function loadState(){
   try{risks=JSON.parse(localStorage.getItem('sib3_risks')||'[]');}catch(e){risks=[];}
   try{stakeholders=JSON.parse(localStorage.getItem('sib3_sh')||'[]');}catch(e){stakeholders=[];}
   try{businessCases=JSON.parse(localStorage.getItem('sib3_bc')||'{}');}catch(e){businessCases={};}
+  try{bcProjects=JSON.parse(localStorage.getItem('sib3_bcp')||'[]');}catch(e){bcProjects=[];}
   try{rate=parseFloat(localStorage.getItem('sib3_r')||'0');}catch(e){rate=0;}
   try{groqKey=localStorage.getItem('sib3_groq')||'';}catch(e){groqKey='';}
 }
@@ -1392,6 +1495,7 @@ function persist(){
     localStorage.setItem('sib3_risks',JSON.stringify(risks));
     localStorage.setItem('sib3_sh',JSON.stringify(stakeholders));
     localStorage.setItem('sib3_bc',JSON.stringify(businessCases));
+    localStorage.setItem('sib3_bcp',JSON.stringify(bcProjects));
     localStorage.setItem('sib3_r',String(rate));
     localStorage.setItem('sib3_groq',groqKey);
   }catch(e){}
@@ -1491,9 +1595,76 @@ function setFilter(f,btn){
   });
   renderCalendar();
 }
-function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
-function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
-function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();renderCalendar();}
+let calView='month'; // 'month' or 'week'
+let calWeekStart=null; // Date of Monday of current week
+
+function setCalView(v){
+  calView=v;
+  document.getElementById('cvt-month').classList.toggle('active',v==='month');
+  document.getElementById('cvt-week').classList.toggle('active',v==='week');
+  document.getElementById('cal-month-wrap').style.display=v==='month'?'':'none';
+  document.getElementById('cal-week-wrap').style.display=v==='week'?'':'none';
+  if(v==='week'){if(!calWeekStart)calWeekStart=getWeekStart(new Date());renderWeek();}
+  else renderCalendar();
+}
+function getWeekStart(d){const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const m=new Date(d);m.setDate(diff);return m;}
+function calNavPrev(){if(calView==='week'){calWeekStart=new Date(calWeekStart);calWeekStart.setDate(calWeekStart.getDate()-7);renderWeek();}else{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}}
+function calNavNext(){if(calView==='week'){calWeekStart=new Date(calWeekStart);calWeekStart.setDate(calWeekStart.getDate()+7);renderWeek();}else{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}}
+
+function renderWeek(){
+  const ws=calWeekStart;
+  const days=[];
+  for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);days.push(d);}
+  const today=new Date().toISOString().slice(0,10);
+  const label=`${days[0].toLocaleDateString('en-ZA',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})}`;
+  set('cal-month-label',label);
+  const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const wrap=document.getElementById('cal-week-inner');
+  // Build header
+  let html=`<div class="week-grid">`;
+  html+=`<div class="week-col-head" style="border-bottom:1px solid var(--border)">Time</div>`;
+  days.forEach((d,i)=>{
+    const ds=d.toISOString().slice(0,10);
+    const isToday=ds===today;
+    const isWknd=i>=5;
+    html+=`<div class="week-col-head${isToday?' today-col':''}${isWknd?' weekend-col':''}">${DOW[i]}<br><span style="font-size:11px;font-weight:700;color:${isToday?'var(--teal)':'var(--text)'}">${d.getDate()}</span></div>`;
+  });
+  html+=`</div>`;
+  // All-day row
+  html+=`<div class="week-all-day-row"><div class="week-all-day-label">All day</div>`;
+  days.forEach((d,i)=>{
+    const ds=d.toISOString().slice(0,10);
+    const isWknd=i>=5;
+    const dayTasks=tasks.filter(t=>t.allDay&&(t.dateFrom===ds||(t.dateTo&&t.dateFrom<=ds&&t.dateTo>=ds)));
+    if(!calFilter||calFilter==='all'){/*all*/}
+    html+=`<div class="week-all-day-cell${isWknd?' weekend-cell':''}">${dayTasks.filter(t=>calFilter==='all'||t.kra===calFilter||(calFilter==='Milestone'&&t.type==='Milestone')).map(t=>`<div class="week-task-chip ${getKRAClass(t)}" onclick="openDetail('${t.id}')" title="${t.name}">${t.name}</div>`).join('')}</div>`;
+  });
+  html+=`</div>`;
+  // Hour rows
+  html+=`<div class="week-grid">`;
+  // Re-add header (sticky)
+  html+=`<div class="week-col-head" style="border-bottom:1px solid var(--border)"></div>`;
+  days.forEach((d,i)=>{
+    const isWknd=i>=5;
+    html+=`<div class="week-col-head${isWknd?' weekend-col':''}"></div>`;
+  });
+  html+=`</div><div class="week-grid" style="overflow:visible">`;
+  for(let h=0;h<24;h++){
+    const label=h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm';
+    html+=`<div class="week-time-label">${label}</div>`;
+    days.forEach((d,i)=>{
+      const ds=d.toISOString().slice(0,10);
+      const isWknd=i>=5;
+      html+=`<div class="week-cell${isWknd?' weekend-cell':''}" onclick="openAddTask('${ds}')"></div>`;
+    });
+  }
+  html+=`</div>`;
+  wrap.innerHTML=html;
+}
+
+function prevMonth(){calNavPrev();}
+function nextMonth(){calNavNext();}
+function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();calWeekStart=getWeekStart(new Date());if(calView==='week')renderWeek();else renderCalendar();}
 
 function getTasksForDate(dateStr){
   return tasks.filter(t=>{
@@ -1529,17 +1700,22 @@ function renderCalendar(){
   // Prev month filler
   for(let i=firstDay-1;i>=0;i--){
     const cell=document.createElement('div');
-    cell.className='cal-cell other-month';
+    const dayOfWeek=(firstDay-1-i+firstDay)%7; // unused, just filler
+    const fillerDow=((firstDay-i-1)%7+7)%7; // 0=Sun,6=Sat
+    cell.className='cal-cell other-month'+(fillerDow===0||fillerDow===6?' weekend':'');
     cell.innerHTML=`<div class="cal-cell-date">${prevDays-i}</div>`;
     grid.appendChild(cell);
   }
   // This month
   for(let d=1;d<=daysInMonth;d++){
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayOfWeek=new Date(calYear,calMonth,d).getDay(); // 0=Sun,6=Sat
+    const isWeekend=dayOfWeek===0||dayOfWeek===6;
     const dayTasks=getTasksForDate(ds);
     const cell=document.createElement('div');
     let cls='cal-cell';
     if(ds===today)cls+=' today';
+    if(isWeekend)cls+=' weekend';
     cell.className=cls;
     cell.onclick=(e)=>{if(e.target===cell||e.target.classList.contains('cal-cell-date')||e.target.classList.contains('cal-cell-today-label')){openAddTask(ds);}}
     let inner=`<div class="cal-cell-date">${d}</div>`;
@@ -1561,7 +1737,8 @@ function renderCalendar(){
   const rem=total%7===0?0:7-(total%7);
   for(let i=1;i<=rem;i++){
     const cell=document.createElement('div');
-    cell.className='cal-cell other-month';
+    const fillerDow=(total+i-1)%7; // 0=Sun,6=Sat
+    cell.className='cal-cell other-month'+(fillerDow===0||fillerDow===6?' weekend':'');
     cell.innerHTML=`<div class="cal-cell-date">${i}</div>`;
     grid.appendChild(cell);
   }
@@ -1604,10 +1781,22 @@ function openDetail(taskId){
     <div class="dp-row"><div class="dp-label">Reverse Planned</div><div class="dp-val"><select id="dp-reverse"><option${t.reverse==='Yes'?' selected':''}>Yes</option><option${t.reverse!=='Yes'?' selected':''}>No</option></select></div></div>
     <div class="dp-row"><div class="dp-label">Task Type</div><div class="dp-val">
       <select id="dp-type">
-        ${['Task','Milestone','Research','Admin'].map(tp=>`<option${tp===t.type?' selected':''}>${tp}</option>`).join('')}
+        ${['Task','Milestone','Research','Admin','Project Admin'].map(tp=>`<option${tp===t.type?' selected':''}>${tp}</option>`).join('')}
       </select>
     </div></div>
     <div class="dp-row"><div class="dp-label">Effort (hrs)</div><div class="dp-val"><input type="number" id="dp-effort" value="${t.effort||2}" min="0.5" step="0.5"></div></div>
+    <div class="dp-row"><div class="dp-label">Recurring</div><div class="dp-val">
+      <select id="dp-recurring">
+        <option value=""${!t.recurring?' selected':''}>Not recurring</option>
+        <option value="Mon"${t.recurring==='Mon'?' selected':''}>Every Monday</option>
+        <option value="Tue"${t.recurring==='Tue'?' selected':''}>Every Tuesday</option>
+        <option value="Wed"${t.recurring==='Wed'?' selected':''}>Every Wednesday</option>
+        <option value="Thu"${t.recurring==='Thu'?' selected':''}>Every Thursday</option>
+        <option value="Fri"${t.recurring==='Fri'?' selected':''}>Every Friday</option>
+        <option value="daily"${t.recurring==='daily'?' selected':''}>Daily (Mon–Fri)</option>
+        <option value="weekly"${t.recurring==='weekly'?' selected':''}>Weekly (same day)</option>
+      </select>
+    </div></div>
   `;
 }
 
@@ -1616,7 +1805,7 @@ function saveDetailEdit(){
   t.dateFrom=v('dp-from');t.dateTo=v('dp-to');t.allDay=document.getElementById('dp-allday')?.checked;
   t.status=v('dp-status');t.due=v('dp-due');t.kra=v('dp-kra');
   t.notes=v('dp-notes');t.project=v('dp-project');t.reverse=v('dp-reverse');
-  t.type=v('dp-type');t.effort=parseFloat(v('dp-effort'))||2;
+  t.type=v('dp-type');t.effort=parseFloat(v('dp-effort'))||2;t.recurring=v('dp-recurring')||'';
   persist();renderCalendar();renderAllTasksTable();toast('Task updated ✓');
   // Re-render detail
   openDetail(selectedTaskId);
@@ -1645,20 +1834,48 @@ function openAddTask(dateStr){
   document.getElementById('m-name').value='';
   document.getElementById('m-notes').value='';
   document.getElementById('m-project').value='';
+  document.getElementById('m-recurring').value='';
+  document.getElementById('m-recurring-end-wrap').style.display='none';
   document.getElementById('modal-add').classList.add('open');
 }
+document.getElementById('m-recurring').addEventListener('change',function(){
+  document.getElementById('m-recurring-end-wrap').style.display=this.value?'':'none';
+});
 function closeModal(){document.getElementById('modal-add').classList.remove('open');}
 function saveNewTask(){
   const name=v('m-name');if(!name){toast('Enter a task name.','err');return;}
-  tasks.push({
-    id:uid(),name,kra:v('m-kra'),type:v('m-type'),
+  const recurring=v('m-recurring');
+  const recurringEnd=v('m-recurring-end');
+  const baseTask={
+    name,kra:v('m-kra'),type:v('m-type'),
     project:v('m-project'),effort:parseFloat(v('m-effort'))||2,
     dateFrom:v('m-date-from'),dateTo:v('m-date-to'),due:v('m-due'),
-    status:v('m-status'),reverse:v('m-reverse'),notes:v('m-notes'),allDay:true
-  });
-  persist();renderCalendar();renderAllTasksTable();closeModal();toast('Task added ✓');
+    status:v('m-status'),reverse:v('m-reverse'),notes:v('m-notes'),allDay:true,recurring
+  };
+  if(!recurring||!recurringEnd||recurringEnd<=baseTask.dateFrom){
+    tasks.push({id:uid(),...baseTask});
+  } else {
+    // Generate recurring instances
+    const dayMap={Mon:1,Tue:2,Wed:3,Thu:4,Fri:5};
+    let cur=new Date(baseTask.dateFrom+'T00:00:00');
+    const end=new Date(recurringEnd+'T00:00:00');
+    let count=0;
+    while(cur<=end&&count<52){
+      const ds=cur.toISOString().slice(0,10);
+      const dow=cur.getDay(); // 0=Sun,6=Sat
+      let add=false;
+      if(recurring==='daily'&&dow>=1&&dow<=5)add=true;
+      else if(recurring==='weekly')add=true;
+      else if(dayMap[recurring]!==undefined&&dow===dayMap[recurring])add=true;
+      if(add)tasks.push({id:uid(),...baseTask,dateFrom:ds,dateTo:ds,due:ds});
+      cur.setDate(cur.getDate()+1);
+      count++;
+    }
+  }
+  persist();renderCalendar();renderAllTasksTable();closeModal();toast('Task'+(recurring&&recurringEnd?'s':'')+ ' added ✓');
 }
 document.getElementById('modal-add').addEventListener('click',e=>{if(e.target===document.getElementById('modal-add'))closeModal();});
+document.getElementById('modal-project').addEventListener('click',e=>{if(e.target===document.getElementById('modal-project'))closeProjectModal();});
 
 // ════════════════════════════════════════════════════════
 // ALL TASKS TABLE
@@ -1699,13 +1916,22 @@ function renderAllTasksTable(){
       <td><span class="status-pill ${statusCls}"><span class="sp-dot"></span>${t.status||'Not started'}</span></td>
       <td style="font-family:'JetBrains Mono',monospace">${t.effort||2}h</td>
       <td><div style="display:flex;gap:4px">
-        <button class="btn btn-ghost btn-xs" onclick="openDetail('${t.id}')">✎</button>
+        <button class="btn btn-ghost btn-xs" title="Edit task" onclick="openDetailFromList('${t.id}')">✎</button>
         <button class="btn btn-danger btn-xs" onclick="deleteTask('${t.id}')">✕</button>
       </div></td>
     </tr>`;
   }).join('');
 }
 function deleteTask(id){if(!confirm('Delete?'))return;tasks=tasks.filter(t=>t.id!==id);persist();renderCalendar();renderAllTasksTable();if(selectedTaskId===id)closeDetail();}
+function openDetailFromList(id){
+  // Switch to calendar view to make the detail panel visible, then open it
+  showView('calendar');
+  // Navigate calendar to the task's dateFrom month
+  const t=tasks.find(x=>x.id===id);
+  if(t&&t.dateFrom){const d=new Date(t.dateFrom+'T00:00:00');calYear=d.getFullYear();calMonth=d.getMonth();}
+  renderCalendar();
+  openDetail(id);
+}
 
 // ════════════════════════════════════════════════════════
 // TIMESHEET
@@ -1819,6 +2045,8 @@ function acC(did){document.getElementById(did)?.classList.remove('open');}
 // ════════════════════════════════════════════════════════
 // KRA
 // ════════════════════════════════════════════════════════
+const KRA_ORDER=Object.keys(KRA_CFG); // ['Research','Project Management','Research Admin','Dissemination']
+
 function renderKRA(){
   const totals={};Object.keys(KRA_CFG).forEach(k=>totals[k]=0);
   tsEntries.forEach(e=>{if(totals[e.kra]!==undefined)totals[e.kra]+=e.hrs;});
@@ -1843,24 +2071,73 @@ function renderKRA(){
   set('deliv-count',done+' / '+total2);
   const db=document.getElementById('deliv-bar');if(db)db.style.width=total2?(done/total2*100)+'%':'0%';
   set('delivs-badge',total2);
+
+  // ── Work Distribution Bar (by deliverable count per KRA) ──
+  const distEl=document.getElementById('deliv-dist-bar');
+  if(distEl&&total2>0){
+    const kraCounts={};KRA_ORDER.forEach(k=>kraCounts[k]=0);
+    delivs.forEach(d=>{if(kraCounts[d.kra]!==undefined)kraCounts[d.kra]++;else kraCounts[d.kra]=(kraCounts[d.kra]||0)+1;});
+    const segments=KRA_ORDER.map(k=>({k,n:kraCounts[k]||0,cfg:KRA_CFG[k]||{color:'var(--border2)',badge:'b-gray'}})).filter(s=>s.n>0);
+    distEl.innerHTML=`
+      <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Work Distribution by Deliverable Count</div>
+      <div style="display:flex;height:18px;border-radius:4px;overflow:hidden;gap:1px;margin-bottom:7px">
+        ${segments.map(s=>`<div style="flex:${s.n};background:${s.cfg.color};position:relative;min-width:4px" title="${s.k}: ${s.n} deliverable${s.n!==1?'s':''} (${(s.n/total2*100).toFixed(0)}%)"></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${segments.map(s=>`<div style="display:flex;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:2px;background:${s.cfg.color};flex-shrink:0"></div>
+          <span style="font-size:10px;color:var(--text2)">${s.k.replace('Project Management','PM').replace('Research Admin','R.Admin')} <strong style="color:var(--text)">${(s.n/total2*100).toFixed(0)}%</strong> <span style="color:var(--text3)">(${s.n})</span></span>
+        </div>`).join('')}
+      </div>`;
+  } else if(distEl){distEl.innerHTML='';}
+
+  // ── Render deliverables grouped by KRA in order ──
   const listEl=document.getElementById('deliverables-list');if(!listEl)return;
-  listEl.innerHTML=delivs.map(d=>{
-    const cfg=(KRA_CFG[d.kra]||{badge:'b-gray'});
-    return `<div class="deliv-item">
+  // Sort delivs by KRA order, preserving insertion order within each group
+  const sorted=[...delivs].sort((a,b)=>{
+    const ai=KRA_ORDER.indexOf(a.kra),bi=KRA_ORDER.indexOf(b.kra);
+    return (ai===-1?999:ai)-(bi===-1?999:bi);
+  });
+  let html='',lastKra=null;
+  sorted.forEach(d=>{
+    const cfg=(KRA_CFG[d.kra]||{badge:'b-gray',color:'var(--border2)'});
+    if(d.kra!==lastKra){
+      lastKra=d.kra;
+      const count=sorted.filter(x=>x.kra===d.kra).length;
+      html+=`<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${cfg.color};padding:10px 0 4px;border-top:1px solid var(--border);margin-top:4px;display:flex;align-items:center;gap:6px">
+        <div style="width:8px;height:8px;border-radius:2px;background:${cfg.color};flex-shrink:0"></div>
+        ${d.kra} <span style="font-weight:400;color:var(--text3)">${count} deliverable${count!==1?'s':''}</span>
+      </div>`;
+    }
+    html+=`<div class="deliv-item">
       <input type="checkbox" id="chk-${d.id}" ${d.done?'checked':''} onchange="toggleDeliv('${d.id}')">
       <label for="chk-${d.id}" class="deliv-label ${d.done?'done':''}">${d.text}</label>
       <span class="badge ${cfg.badge}" style="font-size:9px">${(d.kra||'').replace('Project Management','PM').replace('Research Admin','R.Admin')}</span>
       <div style="display:flex;gap:3px"><button class="btn-ghost btn btn-xs" onclick="startEditDeliv('${d.id}')">✎</button><button class="btn btn-danger btn-xs" onclick="removeDeliv('${d.id}')">✕</button></div>
     </div>`;
-  }).join('');
+  });
+  listEl.innerHTML=html;
 }
+
 function toggleDeliv(id){const d=delivs.find(x=>x.id===id);if(d){d.done=document.getElementById('chk-'+id).checked;persist();renderKRA();}}
 function startEditDeliv(id){const d=delivs.find(x=>x.id===id);if(!d)return;const name=prompt('Edit deliverable name:',d.text);if(name&&name.trim()){d.text=name.trim();persist();renderKRA();}}
 function removeDeliv(id){if(!confirm('Remove?'))return;delivs=delivs.filter(d=>d.id!==id);persist();renderKRA();}
-function resetDelivs(){if(!confirm('Reset to defaults?'))return;delivs=JSON.parse(JSON.stringify(DEFAULT_DELIVS));persist();renderKRA();}
+function resetDelivs(){if(!confirm('Reset to defaults? This will remove any custom deliverables.'))return;delivs=JSON.parse(JSON.stringify(DEFAULT_DELIVS));persist();renderKRA();}
+function refreshDelivs(){delivs=[...delivs].sort((a,b)=>(KRA_ORDER.indexOf(a.kra)===-1?999:KRA_ORDER.indexOf(a.kra))-(KRA_ORDER.indexOf(b.kra)===-1?999:KRA_ORDER.indexOf(b.kra)));persist();renderKRA();toast('Deliverables re-sorted by KRA ✓');}
 function showAddDeliv(){document.getElementById('add-deliv-panel').style.display='block';document.getElementById('new-deliv-text').focus();}
 function hideAddDeliv(){document.getElementById('add-deliv-panel').style.display='none';document.getElementById('new-deliv-text').value='';}
-function addDeliv(){const text=document.getElementById('new-deliv-text').value.trim();if(!text)return;delivs.push({id:uid(),text,kra:document.getElementById('new-deliv-kra').value,done:false});persist();renderKRA();hideAddDeliv();}
+function addDeliv(){
+  const text=document.getElementById('new-deliv-text').value.trim();
+  if(!text)return;
+  const kra=document.getElementById('new-deliv-kra').value;
+  const newItem={id:uid(),text,kra,done:false};
+  // Smart insert: place after last item of same KRA group
+  const lastIdx=delivs.reduce((acc,d,i)=>d.kra===kra?i:acc,-1);
+  if(lastIdx>=0)delivs.splice(lastIdx+1,0,newItem);
+  else delivs.push(newItem);
+  persist();renderKRA();hideAddDeliv();
+  toast('Added to '+kra+' ✓');
+}
 
 // ════════════════════════════════════════════════════════
 // GANTT
@@ -1941,7 +2218,9 @@ const BC_FIELDS=[
   'gc-sponsor','gc-pm','gc-start','gc-end','gc-team','gc-milestones','gc-risks','gc-sustainment'
 ];
 function saveBC(){
-  const proj=v('bc-project-select'),data={status:''};
+  const proj=v('bc-project-select');
+  if(!proj){toast('Create or select a project first.','err');return;}
+  const data={status:''};
   BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)data[id]=el.value;});
   // Save number fields for general template
   ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el)data[id]=el.value;});
@@ -1957,53 +2236,187 @@ function saveBC(){
   renderBCSavedList();
 }
 function deleteBCData(projVal,projLabel,e){
-  e.stopPropagation();
+  if(e)e.stopPropagation();
   if(!confirm('Delete all saved data for "'+projLabel+'"? This cannot be undone.'))return;
   delete businessCases[projVal];persist();
   if(v('bc-project-select')===projVal){
     BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   }
-  renderBCSavedList();toast('Business case deleted');
+  renderBCSavedList();toast('Business case data cleared');
 }
+// ════════════════════════════════════════════════════════
+// BC PROJECT MANAGER
+// ════════════════════════════════════════════════════════
+let _idManuallySet=false;
+function genProjectId(name){
+  if(!name)return'PROJ-'+Date.now().toString(36).toUpperCase().slice(-4);
+  const words=name.trim().split(/\s+/).filter(w=>w.length>2&&!/^(the|and|of|for|in|a|an|to|is|are|with)$/i.test(w));
+  const initials=words.slice(0,4).map(w=>w[0].toUpperCase()).join('');
+  const yr=new Date().getFullYear().toString().slice(-2);
+  return(initials||'P')+'-'+yr+'-'+Math.random().toString(36).slice(2,5).toUpperCase();
+}
+function previewProjectId(){
+  if(_idManuallySet)return; // don't overwrite after regen
+  const name=document.getElementById('proj-name').value;
+  const existing=document.getElementById('proj-edit-id').value;
+  if(!existing){
+    const idField=document.getElementById('proj-id-preview');
+    idField.value=genProjectId(name);
+  }
+}
+function regenerateProjectId(){
+  _idManuallySet=true;
+  const name=document.getElementById('proj-name').value;
+  const idField=document.getElementById('proj-id-preview');
+  idField.readOnly=false;
+  idField.value=genProjectId(name);
+  idField.focus();idField.select();
+}
+function openNewProjectModal(){
+  _idManuallySet=false;
+  document.getElementById('proj-modal-title').textContent='➕ New Project';
+  document.getElementById('proj-edit-id').value='';
+  document.getElementById('proj-name').value='';
+  document.getElementById('proj-id-preview').value='';
+  document.getElementById('proj-id-preview').readOnly=true;
+  document.getElementById('proj-desc').value='';
+  document.getElementById('proj-type').value='SIB';
+  document.getElementById('proj-status').value='Active';
+  document.getElementById('modal-project').classList.add('open');
+  setTimeout(()=>document.getElementById('proj-name').focus(),80);
+}
+function openEditProjectModal(id){
+  const p=bcProjects.find(x=>x.id===id);if(!p)return;
+  document.getElementById('proj-modal-title').textContent='✎ Edit Project';
+  document.getElementById('proj-edit-id').value=id;
+  document.getElementById('proj-name').value=p.name;
+  document.getElementById('proj-id-preview').value=p.id;
+  document.getElementById('proj-id-preview').readOnly=false;
+  document.getElementById('proj-desc').value=p.desc||'';
+  document.getElementById('proj-type').value=p.type||'SIB';
+  document.getElementById('proj-status').value=p.status||'Active';
+  document.getElementById('modal-project').classList.add('open');
+}
+function closeProjectModal(){document.getElementById('modal-project').classList.remove('open');}
+function saveProject(){
+  const name=document.getElementById('proj-name').value.trim();
+  if(!name){toast('Enter a project name.','err');return;}
+  const editId=document.getElementById('proj-edit-id').value;
+  const newId=(document.getElementById('proj-id-preview').value.trim()||genProjectId(name)).toUpperCase().replace(/\s+/g,'-');
+  const desc=document.getElementById('proj-desc').value.trim();
+  const type=document.getElementById('proj-type').value;
+  const status=document.getElementById('proj-status').value;
+  if(editId){
+    const p=bcProjects.find(x=>x.id===editId);
+    if(p){p.name=name;p.desc=desc;p.type=type;p.status=status;
+      // If ID changed, migrate businessCases data
+      if(newId!==editId){
+        if(businessCases[editId]){businessCases[newId]=businessCases[editId];delete businessCases[editId];}
+        p.id=newId;
+        if(document.getElementById('bc-project-select').value===editId)
+          document.getElementById('bc-project-select').value=newId;
+      }
+    }
+  } else {
+    // Check for duplicate ID
+    if(bcProjects.find(x=>x.id===newId)){toast('Project ID already exists — regenerate.','err');return;}
+    bcProjects.push({id:newId,name,desc,type,status,created:new Date().toISOString().slice(0,10)});
+    // Auto-select newly created project with guaranteed blank form
+    document.getElementById('bc-project-select').value=newId;
+    clearBCForm();
+  }
+  persist();closeProjectModal();renderBCSavedList();
+  if(!editId)toast('Project '+newId+' created ✓');
+  else toast('Project updated ✓');
+}
+function deleteProjectData(id,label,e){
+  if(e){e.stopPropagation();}
+  if(!confirm('Delete project "'+label+'" and all its business case data?'))return;
+  bcProjects=bcProjects.filter(p=>p.id!==id);
+  delete businessCases[id];
+  const wasCurrent=document.getElementById('bc-project-select').value===id;
+  persist();
+  if(wasCurrent){
+    const next=bcProjects[0];
+    clearBCForm();
+    if(next){document.getElementById('bc-project-select').value=next.id;loadBC(next.id);}
+    else document.getElementById('bc-project-select').value='';
+  }
+  renderBCSavedList();toast('Project deleted','err');
+}
+
 function renderBCSavedList(){
   const el=document.getElementById('bc-saved-quicklist');if(!el)return;
-  const PROJECTS=[
-    {value:'cataract',label:'Cataract SIB'},
-    {value:'agyw',label:'AGYW SRH SIB'},
-    {value:'rhd',label:'Paediatric RHD SIB'}
-  ];
-  const STATUS_COLOR={Draft:'var(--text3)',['In Review']:'var(--gold)',Final:'var(--teal)'};
-  // Only show projects that have actual saved data
-  const saved=PROJECTS.filter(p=>{
-    const d=businessCases[p.value];
-    return d&&BC_FIELDS.some(f=>d[f]&&d[f].trim());
-  });
-  if(!saved.length){
-    el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:8px 4px;font-style:italic">No saved cases yet — fill in a form and hit Save.</div>';
+  // Sync label badge
+  const curId=document.getElementById('bc-project-select').value;
+  const curProj=bcProjects.find(p=>p.id===curId);
+  const labelBadge=document.getElementById('bc-project-label');
+  if(labelBadge){
+    if(curProj){labelBadge.textContent=curProj.name;labelBadge.style.display='';}
+    else{labelBadge.textContent='No project selected';labelBadge.style.color='var(--text3)';}
+  }
+  if(!bcProjects.length){
+    el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:8px 4px;font-style:italic">No projects yet — click + New to create one.</div>';
     return;
   }
-  el.innerHTML=saved.map(p=>{
-    const d=businessCases[p.value];
-    const status=d&&d.status?d.status:'';
-    const tpl=d&&d._template?d._template.toUpperCase():'';
-    const title=d&&d['bc-title']&&d['bc-title'].trim()?d['bc-title'].trim():'';
-    const isCur=v('bc-project-select')===p.value;
-    return `<div style="position:relative;padding:8px 30px 8px 9px;border-radius:5px;cursor:pointer;transition:background .12s;background:${isCur?'var(--teal-lt)':'var(--surface)'};border:1px solid ${isCur?'var(--teal)':'var(--border)'};margin-bottom:3px" onclick="document.getElementById('bc-project-select').value='${p.value}';loadBC('${p.value}');renderBCSavedList();">
+  const STATUS_COLOR={Active:'var(--teal)',Pipeline:'var(--blue)',['On Hold']:'var(--gold)',Completed:'var(--green)'};
+  el.innerHTML=bcProjects.map(p=>{
+    const d=businessCases[p.id];
+    const bcStatus=d&&d.status?d.status:'';
+    const isCur=curId===p.id;
+    return `<div style="position:relative;padding:8px 30px 8px 9px;border-radius:5px;cursor:pointer;transition:background .12s;background:${isCur?'var(--teal-lt)':'var(--surface)'};border:1px solid ${isCur?'var(--teal)':'var(--border)'};margin-bottom:3px" onclick="selectBCProject('${p.id}')">
       <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
-        <svg width="11" height="11" fill="none" stroke="var(--teal)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <span style="font-size:11px;font-weight:600;color:${isCur?'var(--teal)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${p.label}</span>
+        <svg width="11" height="11" fill="none" stroke="${isCur?'var(--teal)':'var(--text3)'}" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span style="font-size:11px;font-weight:600;color:${isCur?'var(--teal)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${p.name}</span>
       </div>
-      ${title?`<div style="font-size:9px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:16px;margin-bottom:3px">${title}</div>`:''}
-      <div style="display:flex;gap:4px;padding-left:16px;flex-wrap:wrap">
-        ${status?`<span style="font-size:9px;font-weight:700;color:${STATUS_COLOR[status]||'var(--text3)'};background:var(--surface2);padding:1px 6px;border-radius:3px">${status}</span>`:''}
-        ${tpl?`<span style="font-size:9px;color:var(--text3);background:var(--surface2);padding:1px 6px;border-radius:3px">${tpl}</span>`:''}
+      <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--teal);padding-left:16px;margin-bottom:3px;letter-spacing:.04em">${p.id}</div>
+      ${p.desc?`<div style="font-size:9px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:16px;margin-bottom:3px">${p.desc}</div>`:''}
+      <div style="display:flex;gap:4px;padding-left:16px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:9px;font-weight:700;color:${STATUS_COLOR[p.status]||'var(--text3)'}">${p.status}</span>
+        <span style="font-size:9px;color:var(--text3)">${p.type}</span>
+        ${bcStatus?`<span style="font-size:9px;color:var(--text2);background:var(--surface2);padding:1px 5px;border-radius:3px">${bcStatus}</span>`:''}
       </div>
-      <button title="Delete this business case" onclick="deleteBCData('${p.value}','${p.label}',event)" style="position:absolute;top:7px;right:7px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;line-height:1;padding:2px 5px;border-radius:3px;transition:all .12s" onmouseover="this.style.background='var(--red-lt)';this.style.color='var(--red)'" onmouseout="this.style.background='none';this.style.color='var(--text3)'">✕</button>
+      <div style="position:absolute;top:6px;right:6px;display:flex;gap:2px">
+        <button title="Edit project" onclick="event.stopPropagation();openEditProjectModal('${p.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:2px 4px;border-radius:3px;line-height:1" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='none'">✎</button>
+        <button title="Delete project" onclick="deleteProjectData('${p.id}','${p.name.replace(/'/g,'')}',event)" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:2px 4px;border-radius:3px;line-height:1" onmouseover="this.style.background='var(--red-lt)';this.style.color='var(--red)'" onmouseout="this.style.background='none';this.style.color='var(--text3)'">✕</button>
+      </div>
     </div>`;
   }).join('');
 }
+function selectBCProject(id){
+  document.getElementById('bc-project-select').value=id;
+  clearBCForm();
+  loadBC(id);
+  renderBCSavedList();
+}
+function clearBCForm(){
+  BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('.bc-status-btn').forEach(b=>b.classList.remove('active'));
+  // Reset template to Custom ToC (primary default)
+  bcTemplate='custom';
+  document.querySelectorAll('[id^="bc-tpl-"]').forEach(b=>b.classList.remove('active'));
+  const defBtn=document.getElementById('bc-tpl-custom');if(defBtn)defBtn.classList.add('active');
+  // Show custom form, hide others
+  ['bc-form-sobc','bc-form-general'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const custForm=document.getElementById('bc-form-custom');if(custForm)custForm.style.display='';
+  // Show custom ToC panel, hide others
+  ['bc-toc-sobc','bc-toc-general'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const tocCust=document.getElementById('bc-toc-custom');if(tocCust)tocCust.style.display='flex';
+  // Clear custom ToC input and generated sections
+  const tocInp=document.getElementById('bc-toc-input');if(tocInp)tocInp.value='';
+  const custOut=document.getElementById('bc-custom-form-output');if(custOut)custOut.innerHTML='';
+  // Reset sidebar ToC navigation links to placeholder
+  const tocLinks=document.getElementById('bc-toc-custom-links');
+  if(tocLinks)tocLinks.innerHTML='<div style="font-size:10px;color:var(--text3);padding:6px 8px;font-style:italic">Upload a ToC to generate sections</div>';
+  const custSaveRow=document.getElementById('bc-custom-save-row');if(custSaveRow)custSaveRow.style.display='none';
+  const custStatus=document.getElementById('bc-custom-status');if(custStatus){custStatus.style.display='none';custStatus.textContent='';}
+  const fp=document.getElementById('bc-fin-preview');if(fp)fp.style.display='none';
+  const gp=document.getElementById('gc-fin-preview');if(gp)gp.style.display='none';
+}
 function loadBC(proj){
+  clearBCForm();
   const data=businessCases[proj];if(!data)return;
   BC_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el&&data[id]!==undefined)el.value=data[id];});
   ['gc-capex','gc-opex','gc-years','gc-savings','gc-procurement'].forEach(id=>{const el=document.getElementById(id);if(el&&data[id]!==undefined)el.value=data[id];});
@@ -2057,7 +2470,7 @@ function gcFinCalc(){
   pt.textContent=`Total Cost (${years}yr): R${totalCost.toLocaleString()} | Total Savings: R${totalSavings.toLocaleString()} | Net Benefit: R${netBenefit.toLocaleString()} | ROI: ${roi.toFixed(0)}% | Payback: ${payback.toFixed(1)} yrs`;
 }
 
-let bcTemplate='sobc';
+let bcTemplate='custom';
 function switchBCTemplate(tpl,btn){
   bcTemplate=tpl;
   document.querySelectorAll('[id^="bc-tpl-"]').forEach(b=>b.classList.remove('active'));
@@ -2068,10 +2481,8 @@ function switchBCTemplate(tpl,btn){
   const tocSobc=document.getElementById('bc-toc-sobc');
   const tocGen=document.getElementById('bc-toc-general');
   const tocCust=document.getElementById('bc-toc-custom');
-  // Hide all
   [sobc,gen,cust].forEach(el=>{if(el)el.style.display='none';});
   [tocSobc,tocGen,tocCust].forEach(el=>{if(el)el.style.display='none';});
-  // Show selected
   if(tpl==='sobc'){
     if(sobc)sobc.style.display='';
     if(tocSobc)tocSobc.style.display='flex';
@@ -2081,7 +2492,6 @@ function switchBCTemplate(tpl,btn){
   } else if(tpl==='custom'){
     if(cust)cust.style.display='';
     if(tocCust)tocCust.style.display='flex';
-    // Re-render custom form if sections already exist
     const proj=v('bc-project-select');
     const saved=businessCases[proj];
     if(saved&&saved._customSections&&saved._customSections.length){
@@ -2097,13 +2507,26 @@ function switchBCTemplate(tpl,btn){
 
 function bcLoadToCFile(input){
   const file=input.files[0]; if(!file)return;
+  // Show filename while loading
+  const btn=document.querySelector('label[for="bc-toc-file"]');
+  if(btn)btn.textContent='⏳ Loading '+file.name+'…';
   const reader=new FileReader();
   reader.onload=e=>{
     const inp=document.getElementById('bc-toc-input');
-    if(inp)inp.value=e.target.result;
-    toast('File loaded — click Generate Form to build your template');
+    if(inp){
+      inp.value=e.target.result;
+      inp.dispatchEvent(new Event('input'));
+    }
+    if(btn)btn.innerHTML=`<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ${file.name} ✓`;
+    toast('✓ '+file.name+' loaded — click Generate Form');
+    // Reset input so same file can be re-uploaded
+    input.value='';
   };
-  reader.readAsText(file);
+  reader.onerror=()=>{
+    if(btn)btn.innerHTML='Upload .txt file';
+    toast('Failed to read file — try pasting the text directly','err');
+  };
+  reader.readAsText(file,'UTF-8');
 }
 
 function bcParseToC(raw){
@@ -2191,10 +2614,7 @@ function bcRenderCustomForm(sections){
             oninput="bcSaveCustomField('${s.id}',this.value)"
           >${s.value||''}</textarea>
         </div>
-        ${isTop?`<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-          <span style="font-size:9px;font-weight:600;color:var(--text3);padding:3px 8px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">Key questions answered here</span>
-          <span style="font-size:9px;color:var(--text3);padding:3px 8px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">Evidence-based</span>
-        </div>`:''}
+        ${isTop?'':''}
       </div>`;
     return sectionHtml;
   }).join('');
@@ -2459,24 +2879,14 @@ if(groqKey){const el=document.getElementById('groq-key');if(el)el.value=groqKey;
 const todayStr=new Date().toISOString().split('T')[0];
 ['df','dt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr;});
 // Calendar
-calYear=new Date().getFullYear();calMonth=new Date().getMonth();
+calYear=new Date().getFullYear();calMonth=new Date().getMonth();calWeekStart=getWeekStart(new Date());
 // Calendar header filter group removed (filters live in top tab bar)
 // Render all
+// Clean up any legacy hardcoded BC project keys
+['cataract','agyw','rhd'].forEach(k=>{if(businessCases[k]&&!bcProjects.find(p=>p.id===k)){delete businessCases[k];}});
+
 updateMetrics();renderCalendar();renderTS();renderKRA();renderPayroll();renderRisks();renderStakeholders();renderLiveStats();renderAllTasksTable();renderBCSavedList();
 updateClock();setInterval(updateClock,30000);
-// Seed sample tasks if empty
-if(tasks.length===0){
-  const t=todayStr;
-  function addD(days){const d=new Date(t);d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
-  tasks=[
-    {id:uid(),name:'Business Case — TB Vaccine — Outline',kra:'Research',type:'Milestone',project:'TBV-Finance',effort:3,dateFrom:t,dateTo:t,due:addD(3),status:'In progress',reverse:'Yes',notes:'Draft milestone (fresh setup).',allDay:true},
-    {id:uid(),name:'Test Grant Proposal — Internal Review',kra:'Research',type:'Milestone',project:'Grant X',effort:2,dateFrom:addD(6),dateTo:addD(6),due:addD(6),status:'Not started',reverse:'Yes',notes:'Reverse-planned milestone. Parent deliverable: Test Grant Proposal.',allDay:true},
-    {id:uid(),name:'TB Vaccine Finance Model',kra:'Project Management',type:'Task',project:'TBV-Finance',effort:2,dateFrom:t,dateTo:t,due:addD(7),status:'In progress',reverse:'No',notes:'',allDay:true},
-    {id:uid(),name:'Business Case — Admin Close-out',kra:'Research Admin',type:'Milestone',project:'TBV-Finance',effort:1,dateFrom:addD(14),dateTo:addD(14),due:addD(14),status:'Not started',reverse:'No',notes:'',allDay:true},
-    {id:uid(),name:'Business Case — Internal Review',kra:'Research',type:'Milestone',project:'Grant X',effort:2,dateFrom:addD(10),dateTo:addD(10),due:addD(10),status:'Not started',reverse:'No',notes:'',allDay:true},
-  ];
-  persist();renderCalendar();renderAllTasksTable();
-}
 </script>
 </body>
 </html>
