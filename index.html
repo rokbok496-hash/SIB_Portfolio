@@ -1343,27 +1343,57 @@ The system will generate a fillable section for each heading." style="width:100%
       <div class="field"><label>Effort (hours)</label><input type="number" id="m-effort" value="2" min="0.5" step="0.5"></div>
     </div>
     <div class="fg2">
-      <div class="field"><label>Recurring</label>
-        <select id="m-recurring">
-          <option value="">Not recurring</option>
-          <option value="Mon">Every Monday</option>
-          <option value="Tue">Every Tuesday</option>
-          <option value="Wed">Every Wednesday</option>
-          <option value="Thu">Every Thursday</option>
-          <option value="Fri">Every Friday</option>
-          <option value="daily">Daily (Mon–Fri)</option>
-          <option value="weekly">Weekly (same day)</option>
-        </select>
-      </div>
-      <div class="field" id="m-recurring-end-wrap" style="display:none"><label>Repeat Until</label><input type="date" id="m-recurring-end"></div>
-    </div>
-    <div class="fg2">
       <div class="field"><label>Plan Date (From)</label><input type="date" id="m-date-from"></div>
       <div class="field"><label>Plan Date (To)</label><input type="date" id="m-date-to"></div>
     </div>
     <div class="fg2">
       <div class="field"><label>Due Date</label><input type="date" id="m-due"></div>
       <div class="field"><label>Status</label><select id="m-status"><option value="Not started">Not started</option><option value="In progress">In progress</option><option value="Complete">Complete</option><option value="Blocked">Blocked</option></select></div>
+    </div>
+    <!-- Recurring section -->
+    <div style="border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;background:var(--surface2)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <input type="checkbox" id="m-is-recurring" onchange="toggleRecurringPanel(this.checked)" style="width:14px;height:14px;cursor:pointer">
+        <label for="m-is-recurring" style="font-size:11px;font-weight:700;color:var(--text);cursor:pointer;margin:0">Recurring task</label>
+      </div>
+      <div id="m-recurring-panel" style="display:none">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Repeat on days</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="1" style="width:15px;height:15px">
+            <span style="font-size:10px;font-weight:600;color:var(--text2)">Mon</span>
+          </label>
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="2" style="width:15px;height:15px">
+            <span style="font-size:10px;font-weight:600;color:var(--text2)">Tue</span>
+          </label>
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="3" style="width:15px;height:15px">
+            <span style="font-size:10px;font-weight:600;color:var(--text2)">Wed</span>
+          </label>
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="4" style="width:15px;height:15px">
+            <span style="font-size:10px;font-weight:600;color:var(--text2)">Thu</span>
+          </label>
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="5" style="width:15px;height:15px">
+            <span style="font-size:10px;font-weight:600;color:var(--text2)">Fri</span>
+          </label>
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="6" style="width:15px;height:15px;opacity:.5">
+            <span style="font-size:10px;font-weight:600;color:var(--text3)">Sat</span>
+          </label>
+          <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" class="m-recur-day" value="0" style="width:15px;height:15px;opacity:.5">
+            <span style="font-size:10px;font-weight:600;color:var(--text3)">Sun</span>
+          </label>
+        </div>
+        <div style="display:flex;gap:8px">
+          <div class="field" style="margin:0;flex:1"><label>Recur From</label><input type="date" id="m-recur-from"></div>
+          <div class="field" style="margin:0;flex:1"><label>Recur Until <span style="color:var(--red)">*</span></label><input type="date" id="m-recur-until"></div>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-top:6px">One task per selected day is created within the date range.</div>
+      </div>
     </div>
     <div class="field"><label>Reverse Planned?</label><select id="m-reverse"><option value="No">No</option><option value="Yes">Yes</option></select></div>
     <div class="field"><label>Notes</label><textarea id="m-notes" rows="2" placeholder="Notes, dependencies, context..."></textarea></div>
@@ -1428,6 +1458,9 @@ The system will generate a fillable section for each heading." style="width:100%
 <div class="toast" id="toast"></div>
 
 <script>
+// ── Timezone-safe date utilities (avoids UTC shift for SAST/UTC+2) ──
+function localDate(str){if(!str)return null;const[y,m,d]=str.split('-').map(Number);return new Date(y,m-1,d);}
+function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 // ════════════════════════════════════════════════════════
 // CONSTANTS
 // ════════════════════════════════════════════════════════
@@ -1615,45 +1648,37 @@ function renderWeek(){
   const ws=calWeekStart;
   const days=[];
   for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);days.push(d);}
-  const today=new Date().toISOString().slice(0,10);
+  const today=localISO(new Date());
   const label=`${days[0].toLocaleDateString('en-ZA',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})}`;
   set('cal-month-label',label);
   const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const wrap=document.getElementById('cal-week-inner');
-  // Build header
   let html=`<div class="week-grid">`;
   html+=`<div class="week-col-head" style="border-bottom:1px solid var(--border)">Time</div>`;
   days.forEach((d,i)=>{
-    const ds=d.toISOString().slice(0,10);
+    const ds=localISO(d);
     const isToday=ds===today;
     const isWknd=i>=5;
     html+=`<div class="week-col-head${isToday?' today-col':''}${isWknd?' weekend-col':''}">${DOW[i]}<br><span style="font-size:11px;font-weight:700;color:${isToday?'var(--teal)':'var(--text)'}">${d.getDate()}</span></div>`;
   });
   html+=`</div>`;
-  // All-day row
   html+=`<div class="week-all-day-row"><div class="week-all-day-label">All day</div>`;
   days.forEach((d,i)=>{
-    const ds=d.toISOString().slice(0,10);
+    const ds=localISO(d);
     const isWknd=i>=5;
     const dayTasks=tasks.filter(t=>t.allDay&&(t.dateFrom===ds||(t.dateTo&&t.dateFrom<=ds&&t.dateTo>=ds)));
-    if(!calFilter||calFilter==='all'){/*all*/}
     html+=`<div class="week-all-day-cell${isWknd?' weekend-cell':''}">${dayTasks.filter(t=>calFilter==='all'||t.kra===calFilter||(calFilter==='Milestone'&&t.type==='Milestone')).map(t=>`<div class="week-task-chip ${getKRAClass(t)}" onclick="openDetail('${t.id}')" title="${t.name}">${t.name}</div>`).join('')}</div>`;
   });
   html+=`</div>`;
-  // Hour rows
   html+=`<div class="week-grid">`;
-  // Re-add header (sticky)
   html+=`<div class="week-col-head" style="border-bottom:1px solid var(--border)"></div>`;
-  days.forEach((d,i)=>{
-    const isWknd=i>=5;
-    html+=`<div class="week-col-head${isWknd?' weekend-col':''}"></div>`;
-  });
+  days.forEach((d,i)=>{const isWknd=i>=5;html+=`<div class="week-col-head${isWknd?' weekend-col':''}"></div>`;});
   html+=`</div><div class="week-grid" style="overflow:visible">`;
   for(let h=0;h<24;h++){
-    const label=h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm';
-    html+=`<div class="week-time-label">${label}</div>`;
+    const lbl=h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm';
+    html+=`<div class="week-time-label">${lbl}</div>`;
     days.forEach((d,i)=>{
-      const ds=d.toISOString().slice(0,10);
+      const ds=localISO(d);
       const isWknd=i>=5;
       html+=`<div class="week-cell${isWknd?' weekend-cell':''}" onclick="openAddTask('${ds}')"></div>`;
     });
@@ -1690,7 +1715,7 @@ function getStatusClass(s){
 function renderCalendar(){
   const label=new Date(calYear,calMonth,1).toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
   set('cal-month-label',label);
-  const today=new Date().toISOString().slice(0,10);
+  const today=localISO(new Date());
   const firstDay=new Date(calYear,calMonth,1).getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
   const prevDays=new Date(calYear,calMonth,0).getDate();
@@ -1828,51 +1853,78 @@ function closeDetail(){
 // TASK MODAL
 // ════════════════════════════════════════════════════════
 function openAddTask(dateStr){
-  const today=dateStr||new Date().toISOString().slice(0,10);
+  const today=dateStr||localISO(new Date());
   document.getElementById('m-date-from').value=today;
   document.getElementById('m-date-to').value=today;
   document.getElementById('m-name').value='';
   document.getElementById('m-notes').value='';
   document.getElementById('m-project').value='';
-  document.getElementById('m-recurring').value='';
-  document.getElementById('m-recurring-end-wrap').style.display='none';
+  document.getElementById('m-due').value='';
+  // Reset recurring panel
+  document.getElementById('m-is-recurring').checked=false;
+  document.getElementById('m-recurring-panel').style.display='none';
+  document.getElementById('m-recur-from').value=today;
+  document.getElementById('m-recur-until').value='';
+  document.querySelectorAll('.m-recur-day').forEach(cb=>cb.checked=false);
   document.getElementById('modal-add').classList.add('open');
+  setTimeout(()=>document.getElementById('m-name').focus(),80);
 }
-document.getElementById('m-recurring').addEventListener('change',function(){
-  document.getElementById('m-recurring-end-wrap').style.display=this.value?'':'none';
-});
 function closeModal(){document.getElementById('modal-add').classList.remove('open');}
+function toggleRecurringPanel(on){
+  document.getElementById('m-recurring-panel').style.display=on?'':'none';
+  if(on){
+    // Default recur-from to the plan date-from
+    const df=document.getElementById('m-date-from').value;
+    if(df)document.getElementById('m-recur-from').value=df;
+  }
+}
+
 function saveNewTask(){
   const name=v('m-name');if(!name){toast('Enter a task name.','err');return;}
-  const recurring=v('m-recurring');
-  const recurringEnd=v('m-recurring-end');
+  const dateFrom=v('m-date-from');
   const baseTask={
     name,kra:v('m-kra'),type:v('m-type'),
     project:v('m-project'),effort:parseFloat(v('m-effort'))||2,
-    dateFrom:v('m-date-from'),dateTo:v('m-date-to'),due:v('m-due'),
-    status:v('m-status'),reverse:v('m-reverse'),notes:v('m-notes'),allDay:true,recurring
+    dateFrom,dateTo:v('m-date-to'),due:v('m-due'),
+    status:v('m-status'),reverse:v('m-reverse'),notes:v('m-notes'),allDay:true
   };
-  if(!recurring||!recurringEnd||recurringEnd<=baseTask.dateFrom){
-    tasks.push({id:uid(),...baseTask});
-  } else {
-    // Generate recurring instances
-    const dayMap={Mon:1,Tue:2,Wed:3,Thu:4,Fri:5};
-    let cur=new Date(baseTask.dateFrom+'T00:00:00');
-    const end=new Date(recurringEnd+'T00:00:00');
-    let count=0;
-    while(cur<=end&&count<52){
-      const ds=cur.toISOString().slice(0,10);
-      const dow=cur.getDay(); // 0=Sun,6=Sat
-      let add=false;
-      if(recurring==='daily'&&dow>=1&&dow<=5)add=true;
-      else if(recurring==='weekly')add=true;
-      else if(dayMap[recurring]!==undefined&&dow===dayMap[recurring])add=true;
-      if(add)tasks.push({id:uid(),...baseTask,dateFrom:ds,dateTo:ds,due:ds});
-      cur.setDate(cur.getDate()+1);
-      count++;
-    }
+
+  const isRecurring=document.getElementById('m-is-recurring').checked;
+  if(!isRecurring){
+    tasks.push({id:uid(),...baseTask,recurring:''});
+    persist();renderCalendar();renderAllTasksTable();closeModal();toast('Task added ✓');
+    return;
   }
-  persist();renderCalendar();renderAllTasksTable();closeModal();toast('Task'+(recurring&&recurringEnd?'s':'')+ ' added ✓');
+
+  // Collect checked days (getDay() values: 0=Sun,1=Mon…6=Sat)
+  const checkedDays=[...document.querySelectorAll('.m-recur-day:checked')].map(cb=>parseInt(cb.value));
+  if(!checkedDays.length){toast('Select at least one day to recur on.','err');return;}
+
+  const recurFrom=v('m-recur-from')||dateFrom;
+  const recurUntil=v('m-recur-until');
+  if(!recurUntil){toast('Set a Recur Until date.','err');return;}
+  if(recurUntil<recurFrom){toast('Recur Until must be after Recur From.','err');return;}
+
+  // Walk day by day using LOCAL dates — no UTC shift
+  const start=localDate(recurFrom);
+  const end=localDate(recurUntil);
+  let cur=new Date(start);
+  let added=0;
+  const MAX=365;
+  const dayLabel={0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat'};
+  const recurLabel=checkedDays.map(d=>dayLabel[d]).join(', ');
+
+  while(cur<=end&&added<MAX){
+    if(checkedDays.includes(cur.getDay())){
+      const ds=localISO(cur); // guaranteed correct local date
+      tasks.push({id:uid(),...baseTask,dateFrom:ds,dateTo:ds,due:ds,recurring:recurLabel});
+      added++;
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+
+  persist();renderCalendar();renderAllTasksTable();closeModal();
+  toast(added+' recurring task'+(added!==1?'s':'')+' added ('+recurLabel+') ✓');
 }
 document.getElementById('modal-add').addEventListener('click',e=>{if(e.target===document.getElementById('modal-add'))closeModal();});
 document.getElementById('modal-project').addEventListener('click',e=>{if(e.target===document.getElementById('modal-project'))closeProjectModal();});
@@ -1882,8 +1934,7 @@ document.getElementById('modal-project').addEventListener('click',e=>{if(e.targe
 // ════════════════════════════════════════════════════════
 function renderAllTasksTable(){
   const tbody=document.getElementById('all-tasks-tbody');if(!tbody)return;
-  const today=new Date().toISOString().slice(0,10);
-  // Task list panel
+  const today=localISO(new Date());
   const panel=document.getElementById('task-list-panel');
   if(panel){
     panel.innerHTML=tasks.length?tasks.map(t=>{
@@ -1944,7 +1995,23 @@ function calcHrs(df,dt,tf,tt){
 function updatePreview(){
   const h=calcHrs(v('df'),v('dt'),v('tf'),v('tt'));
   const el=document.getElementById('ts-preview');
-  if(el)el.textContent=h>0?'Session: '+h.toFixed(2)+' hrs'+(rate>0?' · R '+fmt2(h*rate):''):'Fill in dates and times to preview hours';
+  if(!el)return;
+  if(h<=0){el.textContent='Fill in dates and times to preview hours';el.style.borderLeftColor='var(--teal)';el.style.background='var(--teal-lt)';el.style.color='var(--teal)';return;}
+  // Check same-day total
+  const df=v('df');
+  const sameDayHrs=tsEntries.filter(e=>e.df===df).reduce((s,e)=>s+e.hrs,0);
+  const projectedTotal=sameDayHrs+h;
+  if(h>10){
+    el.textContent='⚠ Session exceeds 10 hrs ('+h.toFixed(2)+' hrs) — not allowed.';
+    el.style.borderLeftColor='var(--red)';el.style.background='var(--red-lt)';el.style.color='var(--red)';
+  } else if(projectedTotal>10){
+    el.textContent='⚠ Adding '+h.toFixed(2)+' hrs would bring '+df+' total to '+projectedTotal.toFixed(2)+' hrs (max 10).';
+    el.style.borderLeftColor='var(--gold)';el.style.background='var(--gold-lt)';el.style.color='var(--gold)';
+  } else {
+    const remaining=10-sameDayHrs;
+    el.textContent='Session: '+h.toFixed(2)+' hrs'+(rate>0?' · R '+fmt2(h*rate):'')+' · '+projectedTotal.toFixed(2)+'/10 hrs today';
+    el.style.borderLeftColor='var(--teal)';el.style.background='var(--teal-lt)';el.style.color='var(--teal)';
+  }
 }
 ['df','dt','tf','tt'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',updatePreview);});
 
@@ -1952,10 +2019,17 @@ function addTSEntry(){
   const df=v('df'),dt=v('dt')||v('df'),tf=v('tf'),tt=v('tt');
   const hrs=calcHrs(df,dt,tf,tt);
   if(!df||!tf||!tt||hrs<=0){toast('Fill in valid dates and times.','err');return;}
+  // ── 10-hour daily cap ──
+  if(hrs>10){toast('A single session cannot exceed 10 hours.','err');return;}
+  const sameDayHrs=tsEntries.filter(e=>e.df===df).reduce((s,e)=>s+e.hrs,0);
+  if(sameDayHrs+hrs>10){
+    toast('Adding this session would exceed 10 hours on '+df+' (already logged: '+sameDayHrs.toFixed(2)+' hrs).','err');
+    return;
+  }
   tsEntries.push({id:Date.now(),df,dt,tf,tt,hrs,kra:v('log-kra'),act:document.getElementById('activity').value.trim(),out:document.getElementById('ts-output').value.trim(),rate,amt:hrs*rate});
   persist();renderTS();updateMetrics();renderKRA();renderPayroll();
   document.getElementById('activity').value='';document.getElementById('ts-output').value='';
-  updatePreview();toast('Session saved — '+hrs.toFixed(2)+' hrs');
+  updatePreview();toast('Session saved — '+hrs.toFixed(2)+' hrs · '+((sameDayHrs+hrs)).toFixed(2)+'/10 hrs today ✓');
 }
 
 function deleteTS(id){if(!confirm('Remove?'))return;tsEntries=tsEntries.filter(e=>e.id!==id);persist();renderTS();updateMetrics();renderKRA();}
@@ -1972,6 +2046,10 @@ function saveTsEdit(id){
   const df=gv('ed-df-'+id)||e.df,dt=gv('ed-dt-'+id)||e.dt||e.df;
   const tf=gv('ed-tf-'+id)||e.tf,tt=gv('ed-tt-'+id)||e.tt;
   const hrs=calcHrs(df,dt,tf,tt);if(hrs<=0){toast('Invalid times','err');return;}
+  if(hrs>10){toast('A single session cannot exceed 10 hours.','err');return;}
+  // Same-day total excluding this entry
+  const sameDayHrs=tsEntries.filter(x=>x.df===df&&x.id!==id).reduce((s,x)=>s+x.hrs,0);
+  if(sameDayHrs+hrs>10){toast('Edit would exceed 10 hrs on '+df+' (other sessions: '+sameDayHrs.toFixed(2)+' hrs).','err');return;}
   e.df=df;e.dt=dt;e.tf=tf;e.tt=tt;e.hrs=hrs;
   e.kra=gv('ed-kra-'+id);e.act=gv('ed-act-'+id);e.out=gv('ed-out-'+id);e.amt=hrs*rate;
   cancelTsEdit(id);persist();renderTS();updateMetrics();renderKRA();toast('Updated ✓');
@@ -2876,7 +2954,7 @@ if(rate){const el=document.getElementById('rate-global');if(el)el.value=rate;}
 // Groq key
 if(groqKey){const el=document.getElementById('groq-key');if(el)el.value=groqKey;}
 // Today dates
-const todayStr=new Date().toISOString().split('T')[0];
+const todayStr=localISO(new Date());
 ['df','dt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr;});
 // Calendar
 calYear=new Date().getFullYear();calMonth=new Date().getMonth();calWeekStart=getWeekStart(new Date());
